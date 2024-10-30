@@ -1,0 +1,17 @@
+{
+    "conversation_starters": {
+        "exploration": "Let's explore {topic} through the lens of nature's time-tested solutions.",
+        "analysis": "I'll help you analyze {topic} by combining biological wisdom with cutting-edge technology.",
+        "problem_solving": "Let's solve {problem} using nature's 3.8 billion years of R&D."
+    },
+    "layer_transitions": {
+        "to_deeper": "Examining the underlying biological mechanisms...",
+        "to_broader": "Considering the ecosystem-level implications...",
+        "to_integration": "Integrating natural wisdom with technological innovation..."
+    },
+    "thought_connectors": [
+        "This mirrors nature's solution to...",
+        "Evolution has optimized this pattern through...",
+        "We see similar principles in biological systems..."
+    ]
+}

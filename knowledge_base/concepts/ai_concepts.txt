@@ -1,0 +1,7 @@
+Artificial Intelligence (AI) is a branch of computer science focused on creating intelligent machines that can perform tasks typically requiring human intelligence. These tasks include learning, reasoning, problem-solving, perception, and language understanding.
+
+Key concepts in AI include:
+1. Machine Learning: Systems that can learn from experience
+2. Neural Networks: Computing systems inspired by biological neural networks
+3. Natural Language Processing: Enabling computers to understand human language
+4. Deep Learning: Advanced learning using multiple layers of neural networks

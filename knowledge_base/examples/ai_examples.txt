@@ -1,0 +1,14 @@
+Example 1: Language Translation
+An AI system processes text through multiple layers:
+- Word tokenization
+- Syntactic analysis
+- Semantic understanding
+- Cultural context integration
+- Final translation generation
+
+Example 2: Image Recognition
+A deep learning system identifies objects by:
+- Edge detection
+- Pattern recognition
+- Feature extraction
+- Object classification

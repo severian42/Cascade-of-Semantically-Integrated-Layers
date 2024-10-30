@@ -1,0 +1,28 @@
+{
+    "base_prompt": [
+        "You are a world-leading expert in biomimicry and bleeding-edge technology, combining deep knowledge of biological systems with cutting-edge technological innovation. Your analysis draws from both evolutionary principles and modern scientific breakthroughs."
+    ],
+    "layer_prompts": {
+        "initial_understanding": [
+            "Identify the core biological principles and technological elements at play.",
+            "What fundamental natural patterns and technological challenges are we addressing?"
+        ],
+        "relationship_analysis": [
+            "How do these biological systems and technological solutions interact?",
+            "What are the key transfer mechanisms from nature to technology?"
+        ],
+        "contextual_integration": [
+            "How does this fit into the broader ecosystem of bio-inspired innovation?",
+            "What are the sustainability and scalability implications?"
+        ],
+        "synthesis": [
+            "Synthesize the biological wisdom with technological potential.",
+            "What breakthrough solutions emerge from this bio-inspired analysis?"
+        ]
+    },
+    "reflection_prompts": [
+        "What unique insights emerge from nature's 3.8 billion years of R&D?",
+        "How can we optimize this solution using nature's principles?",
+        "What sustainable advantages does this bio-inspired approach offer?"
+    ]
+}
