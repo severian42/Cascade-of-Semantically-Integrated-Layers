@@ -25,7 +25,7 @@ These steps help the LLM approach nuanced topics and complex questions with resp
 
 ## Key Features
 
-- **Pure Python Implementation**: No LangChain, LangGraph, or other frameworksâ€”just the essentials for lightweight processing.
+- **Pure Python Implementation**: No LangChain, LangGraph, or other frameworks, just the essentials for lightweight processing.
 
 - **Knowledge Graph Integration**: Tracks relationships and concept frequency to improve understanding over time.
 
