@@ -1869,32 +1869,4 @@ def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
     }
     print(f"{colors.get(color, '')}{text}{colors['reset']}", end=end)
 
-# # Sample document corpus
-# document_corpus = [
-#     "The quick brown fox jumps over the lazy dog.",
-#     "A lazy cat sleeps under the warm sun.",
-#     "The dog chases the squirrel up the tree.",
-#     "The cat and the dog are best friends.",
-# ]
 
-# # User query
-# query = "What is the relationship between cats and dogs?"
-
-# # Initialize with custom configuration
-# scp = SemanticCascadeProcessor(SCPConfig(
-#     min_keywords=2
-# ))
-
-# # Load knowledge base
-# scp.knowledge_base.load_from_directory('knowledge_base/concepts')
-# scp.knowledge_base.load_from_directory('knowledge_base/examples')
-# scp.knowledge_base.load_from_json('knowledge_base/prompts/system_prompts.json')
-# scp.knowledge_base.load_from_json('knowledge_base/prompts/conversation_templates.json')
-
-# # Process query directly through semantic cascade layers
-# results = scp.process_interaction("What is the relationship between cats and dogs?")
-# print("\nSemantic Cascade Process:")
-# print("1. Concept Extraction:", results['initial_understanding'])
-# print("2. Semantic Analysis:", results['relationships'])
-# print("3. Context Integration:", results['context_integration'])
-# print("4. Response Synthesis:", results['final_response'])
