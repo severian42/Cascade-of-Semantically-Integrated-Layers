@@ -1,112 +1,104 @@
-# Cascade of Semantically Integrated Layers (CSIL)
+# Cascade of Semantically Integrated Layers (CaSIL)
 
-## Overview
+## Abstract
 
-The **Cascade of Semantically Integrated Layers (CSIL)** is an advanced multi-layer semantic analysis system designed to generate contextually rich and semantically meaningful responses. It processes user input and knowledge base content through multiple semantic layers, integrating dynamic corpus management, adaptive semantic analysis, and knowledge graph integration. The result is a system that understands and responds to queries with depth and nuance.
+The **Cascade of Semantically Integrated Layers (CaSIL)** implements a sophisticated multi-layer semantic analysis system that processes both user input and knowledge base content through progressive semantic layers. The system combines dynamic corpus management, adaptive semantic analysis, and knowledge graph integration to ensure contextually appropriate and semantically rich responses.
 
-## How It Works
+## Core Components
 
-CSIL operates by breaking down the processing of user input into four sequential layers, each building upon the previous one:
-
-### 1. Initial Understanding
-
-- **Objective**: Extract fundamental concepts from the user input.
-- **Process**:
-  - Use techniques like TF-IDF (Term Frequency-Inverse Document Frequency) to identify key terms.
-  - Apply Named Entity Recognition (NER) to detect entities like people, places, and organizations.
-  - Filter out common stopwords to focus on meaningful content.
-- **Outcome**: A set of core concepts and questions identified from the input.
-
-### 2. Relationship Analysis
-
-- **Objective**: Discover semantic connections between the extracted concepts.
-- **Process**:
-  - Calculate semantic similarity between concepts.
-  - Utilize a knowledge graph to identify and map relationships.
-  - Cluster related concepts to understand their interconnections.
-- **Outcome**: A network of related concepts highlighting how they interact.
-
-### 3. Context Integration
-
-- **Objective**: Incorporate broader context and additional information not initially present.
-- **Process**:
-  - Integrate historical and background knowledge from a knowledge base.
-  - Adjust context dynamically based on the conversation's progression.
-  - Apply weighting to emphasize the most relevant context.
-- **Outcome**: An enriched understanding of the query with added depth and background.
-
-### 4. Response Synthesis
-
-- **Objective**: Generate a cohesive and contextually appropriate response.
-- **Process**:
-  - Synthesize information from all previous layers.
-  - Adjust the response style and tone according to the context.
-  - Utilize templates and dynamic parameters to refine the output.
-- **Outcome**: A well-crafted response that addresses the user's query comprehensively.
-
-## Key Components
-
-### Semantic Layer Processing
-
-The core of CSIL is its layered approach to semantic processing. Each layer refines the understanding of the user input, ensuring that the final response is accurate and nuanced.
-
+### 1. Semantic Layer Processing
 ```python
 def process_semantic_cascade(self, user_input: str) -> Dict[str, Any]:
     """
     Multi-layer semantic processing pipeline.
+    
+    1. Initial Understanding: Extract fundamental concepts
+    2. Relationship Analysis: Discover semantic connections
+    3. Context Integration: Incorporate broader context
+    4. Response Synthesis: Generate cohesive response
+    
+    Args:
+        user_input: Original user query
+        
+    Returns:
+        Dict containing results from each processing layer
     """
-    # Initialize results
-    results = {
-        'initial_understanding': '',
-        'relationships': '',
-        'context_integration': '',
-        'final_response': '',
-        'metadata': {
-            'timestamp': datetime.now().isoformat(),
-            'concepts_extracted': [],
-            'similarity_scores': {}
+    try:
+        self.last_query = user_input
+        
+        # Initialize results dictionary
+        results = {
+            'initial_understanding': '',
+            'relationships': '',
+            'context_integration': '',
+            'final_response': '',
+            'metadata': {
+                'timestamp': datetime.now().isoformat(),
+                'concepts_extracted': [],
+                'similarity_scores': {}
+            }
         }
-    }
-    
-    # Sequentially process each layer
-    results['initial_understanding'] = self._process_layer(
-        "initial_understanding",
-        user_input,
-        "",
-        "Identify the fundamental concepts and questions."
-    )
-    results['relationships'] = self._process_layer(
-        "relationship_analysis",
-        user_input,
-        results['initial_understanding'],
-        "Discover connections between the identified concepts."
-    )
-    results['context_integration'] = self._process_layer(
-        "contextual_integration",
-        user_input,
-        results['relationships'],
-        "Add broader context and implications not yet discussed."
-    )
-    results['final_response'] = self._process_layer(
-        "synthesis",
-        user_input,
-        results['context_integration'],
-        "Create a cohesive response that builds upon all previous layers."
-    )
-    
-    return results
+        
+        # Process each layer sequentially
+        results['initial_understanding'] = self._process_layer(
+            "initial_understanding",
+            user_input,
+            "",  # No previous output for first layer
+            "Identify ONLY the fundamental concepts and questions."
+        )
+        
+        results['relationships'] = self._process_layer(
+            "relationship_analysis",
+            user_input,
+            results['initial_understanding'],
+            "Discover NEW connections between the identified concepts."
+        )
+        
+        results['context_integration'] = self._process_layer(
+            "contextual_integration",
+            user_input,
+            results['relationships'],
+            "Add BROADER context and implications not yet discussed."
+        )
+        
+        results['final_response'] = self._process_layer(
+            "synthesis",
+            user_input,
+            results['context_integration'],
+            "Create a cohesive response that builds upon all previous layers."
+        )
+        
+        return results
+        
+    except Exception as e:
+        if self.config.debug_mode:
+            print(f"Error in semantic cascade: {str(e)}")
+        return {
+            'initial_understanding': '',
+            'relationships': '',
+            'context_integration': '',
+            'final_response': f"Error processing query: {str(e)}",
+            'error': str(e)
+        }
 ```
 
-### Knowledge Graph Integration
-
-CSIL maintains a knowledge graph that tracks concepts and their relationships, enhancing its ability to provide contextually relevant responses.
+### 2. Knowledge Graph Integration
+The system maintains a sophisticated knowledge graph that tracks concepts, relationships, and their evolution over time:
 
 ```python
-def _update_knowledge_graph(self, concepts: List[str], relationships: List[Tuple[str, str, float]]) -> None:
+def _update_knowledge_graph(
+    self, 
+    concepts: List[str], 
+    relationships: List[Tuple[str, str, float]]
+) -> None:
     """
-    Update the internal knowledge graph with new concepts and relationships.
+    Update internal knowledge graph with new concepts and relationships.
+    
+    Args:
+        concepts: List of concepts to add/update
+        relationships: List of (concept1, concept2, weight) tuples
     """
-    # Add or update concepts
+    # Add new concepts with metadata
     for concept in concepts:
         if concept not in self.knowledge_graph:
             self.knowledge_graph.add_node(
@@ -115,25 +107,27 @@ def _update_knowledge_graph(self, concepts: List[str], relationships: List[Tuple
                 frequency=1
             )
         else:
+            # Update existing concept frequency
             self.knowledge_graph.nodes[concept]['frequency'] += 1
-                
+            
     # Add or update relationships
     for c1, c2, weight in relationships:
         if self.knowledge_graph.has_edge(c1, c2):
+            # Update existing relationship weight
             current_weight = self.knowledge_graph[c1][c2]['weight']
             new_weight = (current_weight + weight) / 2
             self.knowledge_graph[c1][c2]['weight'] = new_weight
         else:
+            # Add new relationship
             self.knowledge_graph.add_edge(c1, c2, weight=weight)
 ```
 
-### Dynamic Configuration
-
-The system allows for fine-tuning through a dynamic configuration setup, enabling adjustments to thresholds, processing options, and layer-specific parameters.
+### 3. Dynamic Configuration
+The system uses a comprehensive configuration system that allows fine-tuning of various parameters:
 
 ```python
 @dataclass
-class CSILConfig:
+class CaSILConfig:
     """Configuration for semantic layer processing."""
     # Core parameters
     min_keywords: int = 2
@@ -168,30 +162,57 @@ class CSILConfig:
     threshold_step: float = 0.05
 ```
 
+## Processing Layers
+
+### Layer 1: Initial Understanding
+- Concept extraction using TF-IDF
+- Named entity recognition
+- Custom stopword filtering
+- Threshold: 0.7
+- Weights: Concept (0.8), Practical (0.2)
+
+### Layer 2: Relationship Analysis
+- Semantic similarity calculation
+- Graph-based relationship discovery
+- Concept clustering
+- Threshold: 0.7
+- Weights: Concept (0.7), Practical (0.3)
+
+### Layer 3: Context Integration
+- Historical context weighting
+- Knowledge base integration
+- Dynamic context windows
+- Threshold: 0.9
+- Weights: Concept (0.6), Practical (0.4)
+
+### Layer 4: Response Synthesis
+- Style-specific processing
+- Dynamic temperature adjustment
+- Template integration
+- Threshold: 0.8
+- Weights: Concept (0.4), Practical (0.6)
+
 ## Technical Features
 
-### Advanced Vectorization
-
-Utilizing TF-IDF vectorization and custom tokenization to extract meaningful concepts from text.
-
+### 1. Advanced Vectorization
 ```python
 class SemanticVectorizer:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(
+            stop_words=None,  # Custom stopword handling
             max_features=500,
             ngram_range=(1, 1),
-            token_pattern=r'(?u)\b\w+\b',
-            strip_accents='unicode'
+            min_df=1,
+            max_df=1.0,
+            strip_accents='unicode',
+            token_pattern=r'(?u)\b\w+\b'
         )
 ```
 
-### Knowledge Graph Analysis
-
-Analyzing the knowledge graph to determine the most central concepts and communities within the graph.
-
+### 2. Knowledge Graph Analysis
 ```python
 def analyze_knowledge_graph(self) -> Dict[str, Any]:
-    """Analyze the knowledge graph state and metrics."""
+    """Analyze knowledge graph state and metrics."""
     return {
         'num_concepts': self.knowledge_graph.number_of_nodes(),
         'central_concepts': nx.pagerank(self.knowledge_graph),
@@ -203,23 +224,23 @@ def analyze_knowledge_graph(self) -> Dict[str, Any]:
 
 ## Performance Optimizations
 
-- **Caching**: Uses LRU (Least Recently Used) caching to optimize similarity calculations.
-- **Batch Processing**: Implements batched vectorization for efficiency.
-- **Lazy Loading**: Loads knowledge bases only when needed.
-- **Concurrency**: Utilizes thread pools for concurrent operations.
-- **Adaptive Management**: Manages the corpus dynamically to optimize performance.
+- LRU caching for similarity calculations
+- Batched vectorization processing
+- Lazy knowledge base loading
+- Thread pool for concurrent operations
+- Adaptive corpus management
 
 ## System Requirements
 
-- **Python Version**: 3.10 or higher
-- **Dependencies**:
-  - `nltk >= 3.6`
-  - `scikit-learn >= 0.24`
-  - `numpy >= 1.19`
-  - `networkx >= 2.5`
-  - `requests >= 2.25`
-  - `python-dotenv >= 0.19`
+- Python 3.10+
+- Dependencies:
+  - nltk >= 3.6
+  - scikit-learn >= 0.24
+  - numpy >= 1.19
+  - networkx >= 2.5
+  - requests >= 2.25
+  - python-dotenv >= 0.19
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT License - See LICENSE file for details
