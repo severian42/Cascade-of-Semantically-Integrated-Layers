@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Cascade of Semantically Integrated Layers (CaSIL)** is a pure Python algorithm that enriches responses from any LLM by layering semantic understanding and contextual depth. CSIL breaks down input through a series of processing layers, adding detail, context, and even a bit of insight along the way. No fancy frameworks, just Python being clever with a little help from `nltk`, `networkx`, and `scikit-learn`.
+The **Cascade of Semantically Integrated Layers (CaSIL)** is a pure Python algorithm that enriches responses from any LLM by layering semantic understanding and contextual depth. CaSIL breaks down input through a series of processing layers, adding detail, context, and even a bit of insight along the way. No fancy frameworks, just Python being clever with a little help from `nltk`, `networkx`, and `scikit-learn`.
 
 ---
 
