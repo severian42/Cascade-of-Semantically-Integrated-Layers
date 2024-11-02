@@ -1,340 +1,288 @@
-"""
-Semantic Cascade Processing (SCP) Evaluation Module
-
-This module tests the effectiveness of SCP by comparing responses 
-with and without SCP processing on a curated set of benchmark questions.
-"""
-
-import json
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, field
-from datetime import datetime
+from SemanticCascadeProcessing import (
+    CascadeSemanticLayerProcessor, 
+    CSILConfig, 
+    LLMConfig, 
+    KnowledgeBase,
+    ensure_nltk_resources
+)
+import sys
 from pathlib import Path
-import numpy as np
-import re
 import os
-from dotenv import load_dotenv
-from openai import OpenAI  # Or whatever LLM client you're using
-from SemanticCascadeProcessing import SemanticCascadeProcessor, SCPConfig
+import json
+from datetime import datetime
+from typing import List, Dict, Any, Tuple
 import requests
-import sseclient
 
-@dataclass
-class LLMConfig:
-    """Configuration for LLM client."""
-    url: str
-    model: str
-    context_window: int
-    temperature: float
-    max_tokens: int
-    stream: bool
-    top_p: float
-    frequency_penalty: float
-    presence_penalty: float
-    repeat_penalty: float
-    stop_sequences: List[str] = field(default_factory=list)
-    seed: Optional[int] = None
+def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
+    """Print colored text to console."""
+    colors = {
+        'blue': '\033[94m',
+        'green': '\033[92m',
+        'red': '\033[91m',
+        'reset': '\033[0m'
+    }
+    print(f"{colors.get(color, '')}{text}{colors['reset']}", end=end)
 
-class LLMClient:
-    """Wrapper for LLM API calls."""
+def make_baseline_call(question: str, llm_config: LLMConfig) -> str:
+    """Make a direct call to the LLM without CSIL processing."""
+    try:
+        headers = {"Content-Type": "application/json"}
+        data = {
+            "model": llm_config.model,
+            "messages": [
+                {"role": "system", "content": "You are a helpful AI assistant. Answer the following question directly and concisely."},
+                {"role": "user", "content": question}
+            ],
+            "temperature": llm_config.temperature,
+            "max_tokens": llm_config.max_tokens,
+            "stream": False  # Force non-streaming for baseline
+        }
+        
+        response = requests.post(
+            llm_config.url,
+            headers=headers,
+            json=data
+        )
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content']
+    except Exception as e:
+        print_colored(f"Baseline LLM call error: {str(e)}", 'red')
+        return ""
+
+def evaluate_response(response: str, correct_answer: str) -> Tuple[bool, float, str]:
+    """
+    Evaluate response accuracy and confidence.
     
-    def __init__(self, config: LLMConfig):
-        """Initialize LLM client with configuration."""
-        self.config = config
+    Args:
+        response (str): The model's response
+        correct_answer (str): The expected correct answer
+        
+    Returns:
+        Tuple[bool, float, str]: (is_correct, confidence, status)
+    """
+    if not response:
+        return False, 0.0, "NO_RESPONSE"
     
-    def complete(self, prompt: str) -> str:
-        """Send prompt to LLM and get response."""
-        try:
-            headers = {"Content-Type": "application/json"}
-            data = {
-                "model": self.config.model,
-                "messages": [
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": self.config.temperature,
-                "max_tokens": self.config.max_tokens,
-                "stream": self.config.stream,
-                "top_p": self.config.top_p,
-                "frequency_penalty": self.config.frequency_penalty,
-                "presence_penalty": self.config.presence_penalty,
-                "repeat_penalty": self.config.repeat_penalty
-            }
+    is_correct = response.lower().strip() in correct_answer.lower()
+    confidence = 1.0 if is_correct else 0.0
+    status = "CORRECT" if is_correct else "INCORRECT"
+    
+    return is_correct, confidence, status
+
+def load_benchmark_questions(file_path: str) -> List[Dict[str, Any]]:
+    """
+    Load and validate benchmark questions from JSON file.
+    
+    Args:
+        file_path (str): Path to the JSON file containing benchmark questions
+        
+    Returns:
+        List[Dict[str, Any]]: List of validated benchmark questions
+        
+    Raises:
+        FileNotFoundError: If benchmark file doesn't exist
+        JSONDecodeError: If benchmark file is not valid JSON
+        ValueError: If benchmark questions are not properly formatted
+    """
+    try:
+        # Check if file exists
+        if not Path(file_path).exists():
+            raise FileNotFoundError(f"Benchmark file not found: {file_path}")
+        
+        # Load questions
+        with open(file_path, 'r', encoding='utf-8') as f:
+            questions = json.load(f)
+        
+        # Validate question format
+        required_fields = {'index', 'category', 'question', 'correct_answer', 'multiple_choice'}
+        for i, q in enumerate(questions):
+            missing_fields = required_fields - set(q.keys())
+            if missing_fields:
+                raise ValueError(
+                    f"Question {i+1} missing required fields: {missing_fields}"
+                )
             
-            # Add seed if specified
-            if self.config.seed is not None:
-                data["seed"] = self.config.seed
+            # Validate multiple choice format
+            if not isinstance(q['multiple_choice'], list) or len(q['multiple_choice']) < 2:
+                raise ValueError(
+                    f"Question {i+1} has invalid multiple choice format"
+                )
+            
+            # Ensure correct answer is in multiple choice options
+            if q['correct_answer'] not in q['multiple_choice']:
+                raise ValueError(
+                    f"Question {i+1} correct answer not in multiple choice options"
+                )
+        
+        print_colored(f"Loaded {len(questions)} benchmark questions", 'green')
+        return questions
+        
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON format in benchmark file: {str(e)}")
+    except Exception as e:
+        raise ValueError(f"Error loading benchmark questions: {str(e)}")
 
-            response = requests.post(
-                self.config.url,
-                headers=headers,
-                data=json.dumps(data),
-                stream=True
-            )
-            response.raise_for_status()
-
-            if self.config.stream:
-                # Handle streaming response
-                client = sseclient.SSEClient(response)
-                full_response = ""
-                for event in client.events():
-                    try:
-                        chunk = json.loads(event.data)
-                        if 'choices' in chunk and chunk['choices']:
-                            content = chunk['choices'][0].get('delta', {}).get('content', '')
-                            full_response += content
-                    except json.JSONDecodeError:
-                        continue
-                return full_response
-            else:
-                # Handle non-streaming response
-                return response.json()['choices'][0]['message']['content']
-
-        except Exception as e:
-            print(f"Error in LLM call: {str(e)}")
-            return ""
-
-def initialize_llm_client() -> LLMClient:
-    """Initialize LLM client with configuration from environment."""
-    load_dotenv()  # Load environment variables from .env file
+def print_result(model_name: str, response: str, correct_answer: str, time_taken: float):
+    """Print detailed result for a model's response."""
+    is_correct = response.lower().strip() in correct_answer.lower()
+    status_symbol = '✓' if is_correct else '✗'
+    status_color = 'green' if is_correct else 'red'
     
-    config = LLMConfig(
+    print_colored(f"\n{model_name} Result:", 'blue')
+    print_colored(f"  {status_symbol} Answer {'Correct' if is_correct else 'Incorrect'} ({time_taken:.2f}s)", status_color)
+    print_colored(f"  Response: {response}", 'blue')
+    print_colored(f"  Expected: {correct_answer}", 'blue')
+
+def main():
+    """Run CSIL evaluation."""
+    print_colored("Initializing system...", 'blue')
+    
+    # Initialize LLM configuration
+    llm_config = LLMConfig(
         url=os.getenv('LLM_URL', 'http://0.0.0.0:11434/v1/chat/completions'),
         model=os.getenv('LLM_MODEL', 'hf.co/arcee-ai/SuperNova-Medius-GGUF:f16'),
         context_window=int(os.getenv('LLM_CONTEXT_WINDOW', '8192')),
-        temperature=float(os.getenv('LLM_TEMPERATURE', '0.6')),
         max_tokens=int(os.getenv('LLM_MAX_TOKENS', '4096')),
-        stream=os.getenv('LLM_STREAM', 'true').lower() == 'true',
         top_p=float(os.getenv('LLM_TOP_P', '0.9')),
         frequency_penalty=float(os.getenv('LLM_FREQUENCY_PENALTY', '0.0')),
         presence_penalty=float(os.getenv('LLM_PRESENCE_PENALTY', '0.0')),
         repeat_penalty=float(os.getenv('LLM_REPEAT_PENALTY', '1.1')),
+        temperature=float(os.getenv('LLM_TEMPERATURE', '0.7')),
+        stream=True,
+        stop_sequences=[],
         seed=int(os.getenv('LLM_SEED')) if os.getenv('LLM_SEED') else None
     )
     
-    return LLMClient(config)
-
-@dataclass
-class EvalQuestion:
-    """Represents a single evaluation question."""
-    index: int
-    category: str
-    question: str
-    correct_answer: str
-    multiple_choice: List[str]
-
-@dataclass
-class EvalResult:
-    """Stores results for a single evaluation run."""
-    question_index: int
-    category: str
-    correct_answer: str
-    scp_answer: str
-    baseline_answer: str
-    scp_time: float
-    baseline_time: float
-    scp_correct: bool
-    baseline_correct: bool
-
-class SCPEvaluator:
-    """Evaluates SCP performance against baseline."""
+    # Initialize CSIL
+    config = CSILConfig(
+        min_keywords=1,
+        max_keywords=100,
+        similarity_threshold=0.05,
+        max_results=10,
+        llm_config=llm_config,
+        debug_mode='--debug' in sys.argv,
+        use_external_knowledge=False
+    )
     
-    def __init__(self, benchmark_path: str):
-        """Initialize evaluator with benchmark questions."""
-        # Test all questions in the benchmark file
-        self.questions = self._load_questions(benchmark_path)
-        self.results: List[EvalResult] = []
-        self.debug_mode = False
+    processor = CascadeSemanticLayerProcessor(config)
     
-    def _load_questions(self, path: str) -> List[EvalQuestion]:
-        """Load all benchmark questions."""
-        with open(path, 'r') as f:
-            data = json.load(f)
-            
-        return [
-            EvalQuestion(
-                index=q['index'],
-                category=q['category'],
-                question=q['question'],
-                correct_answer=q['correct_answer'],
-                multiple_choice=q['multiple_choice']
-            )
-            for q in data
-        ]
+    # Load benchmark questions
+    questions = load_benchmark_questions("linguistic_benchmark_multi_choice.json")
     
-    def run_evaluation(self, 
-                      scp_processor: SemanticCascadeProcessor,
-                      llm_client: LLMClient,
-                      baseline_prompt: str = "") -> None:
-        """Run evaluation comparing SCP vs baseline."""
-        for question in self.questions:
-            # Format question with choices
-            formatted_q = (
-                f"Question: {question.question}\n\n"
-                f"Choose from:\n" + 
-                "\n".join(f"{i+1}. {c}" for i, c in enumerate(question.multiple_choice))
-            )
+    # Track results for both CSIL and baseline
+    csil_results = []
+    baseline_results = []
+    
+    print_colored("\nStarting benchmark evaluation...", 'blue')
+    
+    for question in questions:
+        try:
+            print_colored(f"\nQ{question['index']}: {question['question']}", 'blue')
             
-            # Run SCP evaluation
-            scp_start = datetime.now()
-            scp_result = scp_processor.process_interaction(formatted_q)
-            scp_time = (datetime.now() - scp_start).total_seconds()
-            scp_answer = scp_result['final_response']
+            # Test CSIL
+            start_time = datetime.now()
+            csil_response = processor.process_semantic_cascade(question['question'])
+            csil_time = (datetime.now() - start_time).total_seconds()
             
-            # Run baseline evaluation
-            baseline_start = datetime.now()
-            baseline_prompt_text = (
-                f"{baseline_prompt}\n\n{formatted_q}"
-                if baseline_prompt else formatted_q
-            )
-            # Make actual LLM call for baseline
-            baseline_answer = llm_client.complete(baseline_prompt_text)
-            baseline_time = (datetime.now() - baseline_start).total_seconds()
+            # Test Baseline
+            start_time = datetime.now()
+            baseline_response = make_baseline_call(question['question'], llm_config)
+            baseline_time = (datetime.now() - start_time).total_seconds()
+            
+            # Print detailed results
+            print_result("CSIL", csil_response['final_response'], 
+                        question['correct_answer'], csil_time)
+            print_result("Baseline", baseline_response, 
+                        question['correct_answer'], baseline_time)
             
             # Store results
-            self.results.append(EvalResult(
-                question_index=question.index,
-                category=question.category,
-                correct_answer=question.correct_answer,
-                scp_answer=scp_answer,
-                baseline_answer=baseline_answer,
-                scp_time=scp_time,
-                baseline_time=baseline_time,
-                scp_correct=self._check_answer(scp_answer, question.correct_answer),
-                baseline_correct=self._check_answer(baseline_answer, question.correct_answer)
-            ))
+            csil_results.append({
+                'index': question['index'],
+                'category': question['category'],
+                'correct': csil_response['final_response'].lower().strip() 
+                          in question['correct_answer'].lower(),
+                'confidence': 1.0,
+                'time': csil_time,
+                'response': csil_response['final_response'],
+                'expected': question['correct_answer']
+            })
+            
+            baseline_results.append({
+                'index': question['index'],
+                'category': question['category'],
+                'correct': baseline_response.lower().strip() in question['correct_answer'].lower(),
+                'confidence': 1.0,
+                'time': baseline_time,
+                'response': baseline_response,
+                'expected': question['correct_answer']
+            })
+            
+        except Exception as e:
+            print_colored(
+                f"Error processing question {question['index']}: {str(e)}", 
+                'red'
+            )
+            continue
     
-    def _check_answer(self, response: str, correct: str) -> bool:
-        """
-        Check if response matches the correct answer with improved accuracy.
-        Handles multiple formats and partial matches.
-        """
-        if not response or not correct:
-            return False
-            
-        # Normalize both strings
-        response = response.lower().strip()
-        correct = correct.lower().strip()
-        
-        # Direct match
-        if correct in response:
-            return True
-            
-        # Handle numeric answers
-        if correct.replace(' ', '').isdigit():
-            # Extract numbers from response
-            numbers = re.findall(r'\d+', response)
-            return any(num == correct.replace(' ', '') for num in numbers)
-            
-        # Handle multiple choice format (e.g., "1." or "A.")
-        if len(correct) <= 3 and correct.endswith('.'):
-            choices = re.findall(r'[A-D1-4]\.', response)
-            return any(choice.lower() == correct.lower() for choice in choices)
-        
-        if self.debug_mode:
-            print(f"\nAnswer Checking:")
-            print(f"Response: {response[:100]}...")
-            print(f"Correct: {correct}")
-            print(f"Match found: {correct in response}")
-        
-        return False
+    # Generate comparative report
+    report = generate_comparative_report(csil_results, baseline_results)
     
-    def generate_report(self) -> str:
-        """Generate evaluation report with detailed metrics."""
-        if not self.results:
-            return "No evaluation results available."
-            
-        total = len(self.results)
-        scp_correct = sum(r.scp_correct for r in self.results)
-        baseline_correct = sum(r.baseline_correct for r in self.results)
-        
-        # Calculate accuracy percentages
-        scp_accuracy = (scp_correct/total*100) if total > 0 else 0
-        baseline_accuracy = (baseline_correct/total*100) if total > 0 else 0
-        
-        # Calculate average processing times
-        avg_scp_time = sum(r.scp_time for r in self.results) / total
-        avg_baseline_time = sum(r.baseline_time for r in self.results) / total
-        
-        # Calculate performance by category
-        categories = {}
-        for r in self.results:
-            if r.category not in categories:
-                categories[r.category] = {
-                    'total': 0, 
-                    'scp_correct': 0, 
-                    'baseline_correct': 0,
-                    'scp_time': 0,
-                    'baseline_time': 0
-                }
-            categories[r.category]['total'] += 1
-            categories[r.category]['scp_time'] += r.scp_time
-            categories[r.category]['baseline_time'] += r.baseline_time
-            if r.scp_correct:
-                categories[r.category]['scp_correct'] += 1
-            if r.baseline_correct:
-                categories[r.category]['baseline_correct'] += 1
-        
-        report = [
-            "# SCP Evaluation Report",
-            f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-            f"\nTotal Questions: {total}",
-            "\n## Overall Results",
-            f"SCP Correct: {scp_correct}/{total} ({scp_accuracy:.1f}%)",
-            f"Baseline Correct: {baseline_correct}/{total} ({baseline_accuracy:.1f}%)",
-            f"\nImprovement: {scp_accuracy - baseline_accuracy:+.1f}%",
-            f"\nAverage Processing Times:",
-            f"SCP: {avg_scp_time:.2f}s",
-            f"Baseline: {avg_baseline_time:.2f}s",
-            f"Time Difference: {avg_scp_time - avg_baseline_time:+.2f}s",
-            "\n## Results by Category"
-        ]
-        
-        for category, stats in categories.items():
-            cat_total = stats['total']
-            scp_cat_acc = (stats['scp_correct']/cat_total*100) if cat_total > 0 else 0
-            base_cat_acc = (stats['baseline_correct']/cat_total*100) if cat_total > 0 else 0
-            avg_cat_scp_time = stats['scp_time'] / cat_total
-            avg_cat_base_time = stats['baseline_time'] / cat_total
-            
-            report.extend([
-                f"\n### {category}",
-                f"Questions: {cat_total}",
-                f"SCP: {stats['scp_correct']}/{cat_total} ({scp_cat_acc:.1f}%)",
-                f"Baseline: {stats['baseline_correct']}/{cat_total} ({base_cat_acc:.1f}%)",
-                f"Improvement: {scp_cat_acc - base_cat_acc:+.1f}%",
-                f"Avg Time - SCP: {avg_cat_scp_time:.2f}s",
-                f"Avg Time - Baseline: {avg_cat_base_time:.2f}s"
-            ])
-        
-        return "\n".join(report)
-
-def main():
-    """Run SCP evaluation."""
-    # Initialize LLM client
-    llm_client = initialize_llm_client()
-    
-    # Initialize SCP with debug mode and LLM config
-    config = SCPConfig(
-        debug_mode=True,
-        llm_config=llm_client.config  # Pass the LLM config here
+    # Save report
+    report_path = Path(
+        f"benchmark_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
     )
-    scp = SemanticCascadeProcessor(config)  # Only pass config
-    
-    # Initialize evaluator
-    evaluator = SCPEvaluator("linguistic_benchmark_multi_choice.json")
-    
-    # Run evaluation with both SCP and baseline
-    evaluator.run_evaluation(
-        scp_processor=scp,
-        llm_client=llm_client,
-        baseline_prompt="You are a helpful AI assistant. Please answer the following question:"
-    )
-    
-    # Generate and save report
-    report = evaluator.generate_report()
-    report_path = Path(f"scp_eval_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
     report_path.write_text(report)
-    print(f"Evaluation report saved to {report_path}")
+    print_colored(f"\nEvaluation report saved to {report_path}", 'green')
+
+def generate_comparative_report(
+    csil_results: List[Dict], 
+    baseline_results: List[Dict]
+) -> str:
+    """Generate a comparative report between CSIL and baseline results."""
+    csil_correct = sum(1 for r in csil_results if r['correct'])
+    baseline_correct = sum(1 for r in baseline_results if r['correct'])
+    total = len(csil_results)
+    
+    report = [
+        "# Benchmark Evaluation Report",
+        f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "\n## Overall Results",
+        f"Total Questions: {total}",
+        "\n### CSIL Performance",
+        f"Correct Answers: {csil_correct}",
+        f"Accuracy: {(csil_correct/total*100):.1f}%",
+        f"Average Time: {sum(r['time'] for r in csil_results)/total:.2f}s",
+        "\n### Baseline Performance",
+        f"Correct Answers: {baseline_correct}",
+        f"Accuracy: {(baseline_correct/total*100):.1f}%",
+        f"Average Time: {sum(r['time'] for r in baseline_results)/total:.2f}s",
+    ]
+    
+    # Add category breakdown
+    report.extend(["\n## Results by Category"])
+    categories = set(r['category'] for r in csil_results)
+    
+    for category in categories:
+        csil_cat = [r for r in csil_results if r['category'] == category]
+        baseline_cat = [r for r in baseline_results if r['category'] == category]
+        
+        report.extend([
+            f"\n### {category}",
+            "#### CSIL",
+            f"Questions: {len(csil_cat)}",
+            f"Accuracy: {(sum(1 for r in csil_cat if r['correct'])/len(csil_cat)*100):.1f}%",
+            f"Average Time: {sum(r['time'] for r in csil_cat)/len(csil_cat):.2f}s",
+            "#### Baseline",
+            f"Questions: {len(baseline_cat)}",
+            f"Accuracy: {(sum(1 for r in baseline_cat if r['correct'])/len(baseline_cat)*100):.1f}%",
+            f"Average Time: {sum(r['time'] for r in baseline_cat)/len(baseline_cat):.2f}s"
+        ])
+    
+    return '\n'.join(report)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print_colored("\nBenchmark interrupted!", 'red')
+        sys.exit(0)
