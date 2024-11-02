@@ -4,7 +4,8 @@
 
 The **Cascade of Semantically Integrated Layers (CSIL)** is a pure Python algorithm that enriches responses from any LLM by layering semantic understanding and contextual depth. CSIL breaks down input through a series of processing layersâ€”adding detail, context, and even a bit of wit along the way. No fancy frameworks, just Python being clever with a little help from `nltk`, `networkx`, and `scikit-learn`.
 
-[GitHub Repository](https://github.com/severian42/Cascade-of-Semantically-Integrated-Layers/)
+---
+
 
 ## How CSIL Works
 
