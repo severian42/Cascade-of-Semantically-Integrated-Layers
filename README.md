@@ -1,267 +1,244 @@
-# Semantic Cascade Processing (SCP)
+# Cascade of Semantically Integrated Layers (CSIL)
 
 ## Abstract
 
-Semantic Cascade Processing (SCP) implements a dynamic multi-layer semantic analysis system that processes both user input and knowledge base content through progressive semantic layers. The system maintains a growing corpus of texts that includes user interactions, conversation context, and knowledge base documents to ensure accurate semantic similarity calculations and adaptive response generation.
+The **Cascade of Semantically Integrated Layers (CSIL)** implements a sophisticated multi-layer semantic analysis system that processes both user input and knowledge base content through progressive semantic layers. The system combines dynamic corpus management, adaptive semantic analysis, and knowledge graph integration to ensure contextually appropriate and semantically rich responses.
 
-## Core Components & Methodology
+## Core Components
 
-1. **Corpus Management**
-   - Dynamic corpus growth with user inputs using rolling window approach
-   - Conversation context integration with temporal weighting
-   - Knowledge base document incorporation with category-based indexing
-   - Adaptive TF-IDF fitting with periodic retraining on updated corpus
-   - Automatic corpus pruning to maintain relevance and performance
-   + **Memory and Learning**
-     - Maintains growing corpus of previous interactions
-     - Tracks conversation history with timestamps
-     - Calculates semantic similarity against historical context
-     - Uses previous concept processing for novelty detection
-     - Influences future responses through accumulated knowledge
-     - Debug mode for monitoring corpus growth and vectorizer status
-
-2. **Semantic Analysis Pipeline**
-   ```python
-   def process_semantic_layers(self, input_text: str) -> ProcessedResult:
-       """
-       Multi-layer semantic processing pipeline.
-       
-       1. Tokenization & preprocessing
-       2. Concept extraction
-       3. Semantic similarity calculation
-       4. Context integration
-       5. Response generation
-       """
-       preprocessed = self._preprocess_text(input_text)
-       concepts = self._extract_concepts(preprocessed)
-       similarities = self._calculate_semantic_layers(concepts)
-       context = self._integrate_context(similarities)
-       return self._generate_response(context)
-   ```
-
-3. **Progressive Layer Processing**
-
-- **Layer 1: Initial Understanding**
-    - Tokenization with custom rules
-    - Stop word filtering with domain-specific additions
-    - Named entity recognition
-    - Concept extraction using TF-IDF weights
-- **Layer 3: Context Integration**
-- **Layer 2: Semantic Analysis**
-    - N-gram generation (1-3 grams)
-    - Semantic similarity calculation
-    - Relationship discovery using graph-based approach
-    - Concept clustering
-- **Layer 4: Response Synthesis**
-- **Layer 3: Context Integration**
-    - Historical context weighting
-    - Knowledge base relevance scoring
-    - Dynamic context wi
-    - Temporal decay function
-
-- **Layer 4: Response Synthesis**
-    - Template selection
-    - Dynamic temperature adjustment
-    - Response generation
+### 1. Semantic Layer Processing
+```python
+def process_semantic_cascade(self, user_input: str) -> Dict[str, Any]:
+    """
+    Multi-layer semantic processing pipeline.
     
-    ---
+    1. Initial Understanding: Extract fundamental concepts
+    2. Relationship Analysis: Discover semantic connections
+    3. Context Integration: Incorporate broader context
+    4. Response Synthesis: Generate cohesive response
+    
+    Args:
+        user_input: Original user query
+        
+    Returns:
+        Dict containing results from each processing layer
+    """
+    try:
+        self.last_query = user_input
+        
+        # Initialize results dictionary
+        results = {
+            'initial_understanding': '',
+            'relationships': '',
+            'context_integration': '',
+            'final_response': '',
+            'metadata': {
+                'timestamp': datetime.now().isoformat(),
+                'concepts_extracted': [],
+                'similarity_scores': {}
+            }
+        }
+        
+        # Process each layer sequentially
+        results['initial_understanding'] = self._process_layer(
+            "initial_understanding",
+            user_input,
+            "",  # No previous output for first layer
+            "Identify ONLY the fundamental concepts and questions."
+        )
+        
+        results['relationships'] = self._process_layer(
+            "relationship_analysis",
+            user_input,
+            results['initial_understanding'],
+            "Discover NEW connections between the identified concepts."
+        )
+        
+        results['context_integration'] = self._process_layer(
+            "contextual_integration",
+            user_input,
+            results['relationships'],
+            "Add BROADER context and implications not yet discussed."
+        )
+        
+        results['final_response'] = self._process_layer(
+            "synthesis",
+            user_input,
+            results['context_integration'],
+            "Create a cohesive response that builds upon all previous layers."
+        )
+        
+        return results
+        
+    except Exception as e:
+        if self.config.debug_mode:
+            print(f"Error in semantic cascade: {str(e)}")
+        return {
+            'initial_understanding': '',
+            'relationships': '',
+            'context_integration': '',
+            'final_response': f"Error processing query: {str(e)}",
+            'error': str(e)
+        }
+```
 
-   - **Layer Weights & Thresholds**
-     - Initial Understanding
-       - Concept Weight: 0.8
-       - Practical Weight: 0.2
-       - Knowledge Integration: 0.3
-     
-     - Semantic Analysis
-       - Concept Weight: 0.7
-       - Practical Weight: 0.3
-       - Knowledge Integration: 0.5
-     
-     - Context Integration
-       - Concept Weight: 0.6
-       - Practical Weight: 0.4
-       - Knowledge Integration: 0.8
-     
-     - Response Synthesis
-       - Concept Weight: 0.4
-       - Practical Weight: 0.6
-       - Knowledge Integration: 0.6
+### 2. Knowledge Graph Integration
+The system maintains a sophisticated knowledge graph that tracks concepts, relationships, and their evolution over time:
 
-4. **Knowledge Base Integration**
-   ```python
-   class KnowledgeBase:
-       def load_structured_knowledge(self, path: str) -> None:
-           """
-           Loads and indexes knowledge from multiple sources:
-           - JSON documents
-           - Text files
-           - Structured databases
-           - External APIs
-           """
-           self.documents = self._load_documents(path)
-           self.index = self._build_semantic_index(self.documents)
-           self.categories = self._extract_categories()
-   ```
+```python
+def _update_knowledge_graph(
+    self, 
+    concepts: List[str], 
+    relationships: List[Tuple[str, str, float]]
+) -> None:
+    """
+    Update internal knowledge graph with new concepts and relationships.
+    
+    Args:
+        concepts: List of concepts to add/update
+        relationships: List of (concept1, concept2, weight) tuples
+    """
+    # Add new concepts with metadata
+    for concept in concepts:
+        if concept not in self.knowledge_graph:
+            self.knowledge_graph.add_node(
+                concept, 
+                first_seen=datetime.now(),
+                frequency=1
+            )
+        else:
+            # Update existing concept frequency
+            self.knowledge_graph.nodes[concept]['frequency'] += 1
+            
+    # Add or update relationships
+    for c1, c2, weight in relationships:
+        if self.knowledge_graph.has_edge(c1, c2):
+            # Update existing relationship weight
+            current_weight = self.knowledge_graph[c1][c2]['weight']
+            new_weight = (current_weight + weight) / 2
+            self.knowledge_graph[c1][c2]['weight'] = new_weight
+        else:
+            # Add new relationship
+            self.knowledge_graph.add_edge(c1, c2, weight=weight)
+```
 
-5. **Debug and Monitoring**
-   - Real-time corpus size tracking
-   - Vectorizer status monitoring
-   - Concept extraction visualization
-   - Similarity calculation breakdowns
-   - Layer-by-layer processing visibility
-   - Response generation monitoring
+### 3. Dynamic Configuration
+The system uses a comprehensive configuration system that allows fine-tuning of various parameters:
 
-## Technical Implementation Details
+```python
+@dataclass
+class CSILConfig:
+    """Configuration for semantic layer processing."""
+    # Core parameters
+    min_keywords: int = 2
+    max_keywords: int = 20
+    keyword_weight_threshold: float = 0.1
+    similarity_threshold: float = 0.1
+    max_results: Optional[int] = None
+    
+    # LLM configuration
+    llm_config: LLMConfig = field(default_factory=LLMConfig)
+    
+    # Processing options
+    debug_mode: bool = False
+    use_external_knowledge: bool = field(
+        default_factory=lambda: os.getenv('USE_EXTERNAL_KNOWLEDGE', 'false').lower() == 'true'
+    )
+    
+    # Layer-specific thresholds
+    layer_thresholds: Dict[str, float] = field(
+        default_factory=lambda: {
+            "initial_understanding": 0.7,
+            "relationship_analysis": 0.7,
+            "contextual_integration": 0.9,
+            "synthesis": 0.8
+        }
+    )
+    
+    # Adaptive processing
+    adaptive_thresholds: bool = True
+    min_threshold: float = 0.1
+    max_threshold: float = 0.9
+    threshold_step: float = 0.05
+```
 
-### 1. Advanced Vectorization System
+## Processing Layers
+
+### Layer 1: Initial Understanding
+- Concept extraction using TF-IDF
+- Named entity recognition
+- Custom stopword filtering
+- Threshold: 0.7
+- Weights: Concept (0.8), Practical (0.2)
+
+### Layer 2: Relationship Analysis
+- Semantic similarity calculation
+- Graph-based relationship discovery
+- Concept clustering
+- Threshold: 0.7
+- Weights: Concept (0.7), Practical (0.3)
+
+### Layer 3: Context Integration
+- Historical context weighting
+- Knowledge base integration
+- Dynamic context windows
+- Threshold: 0.9
+- Weights: Concept (0.6), Practical (0.4)
+
+### Layer 4: Response Synthesis
+- Style-specific processing
+- Dynamic temperature adjustment
+- Template integration
+- Threshold: 0.8
+- Weights: Concept (0.4), Practical (0.6)
+
+## Technical Features
+
+### 1. Advanced Vectorization
 ```python
 class SemanticVectorizer:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(
             stop_words=None,  # Custom stopword handling
-            max_features=1000,
-            ngram_range=(1, 3),  # Extended n-gram range
+            max_features=500,
+            ngram_range=(1, 1),
             min_df=1,
-            max_df=0.95,  # Prevent common term dominance
+            max_df=1.0,
             strip_accents='unicode',
-            token_pattern=r'(?u)\b\w+\b',
-            use_idf=True,
-            smooth_idf=True,
-            sublinear_tf=True  # Apply sublinear scaling
+            token_pattern=r'(?u)\b\w+\b'
         )
-        self.concept_embeddings = {}
-        self.similarity_cache = LRUCache(maxsize=1000)
 ```
 
-### 2. Concept Processing Pipeline
+### 2. Knowledge Graph Analysis
 ```python
-class ConceptProcessor:
-    def process_concepts(
-        self, 
-        text: str, 
-        context: Context
-    ) -> ProcessedConcepts:
-        """
-        Complete concept processing pipeline:
-        1. Extract initial concepts
-        2. Calculate novelty scores
-        3. Apply context weighting
-        4. Generate final concept representation
-        """
-        initial_concepts = self._extract_initial_concepts(text)
-        novelty_scores = self._calculate_concept_novelty(
-            initial_concepts, 
-            context.previous_concepts
-        )
-        weighted_concepts = self._apply_context_weights(
-            initial_concepts,
-            novelty_scores,
-            context
-        )
-        return self._generate_concept_representation(weighted_concepts)
+def analyze_knowledge_graph(self) -> Dict[str, Any]:
+    """Analyze knowledge graph state and metrics."""
+    return {
+        'num_concepts': self.knowledge_graph.number_of_nodes(),
+        'central_concepts': nx.pagerank(self.knowledge_graph),
+        'communities': list(nx.community.greedy_modularity_communities(
+            self.knowledge_graph.to_undirected()
+        ))
+    }
 ```
 
-### 3. Dynamic Response Generation
-```python
-class ResponseGenerator:
-    def generate_response(
-        self, 
-        concepts: ProcessedConcepts, 
-        context: Context
-    ) -> Response:
-        """
-        Generate contextually appropriate responses:
-        1. Calculate response temperature
-        2. Select appropriate templates
-        3. Generate candidate responses
-        4. Score and select best response
-        """
-        temperature = self._calculate_dynamic_temperature(
-            concepts.novelty_score
-        )
-        templates = self._select_templates(concepts, context)
-        candidates = self._generate_candidates(
-            templates, 
-            temperature
-        )
-        return self._select_best_response(candidates, context)
-```
+## Performance Optimizations
 
-## Advanced Configuration Options
-
-```python
-class SCPConfig:
-    def __init__(self):
-        self.semantic_config = SemanticConfig(
-            min_similarity=0.1,
-            max_concepts=50,
-            context_window=10,
-            temporal_decay=0.95
-        )
-        
-        self.vectorizer_config = VectorizerConfig(
-            max_features=1000,
-            ngram_range=(1, 3),
-            min_df=1,
-            max_df=0.95
-        )
-        
-        self.response_config = ResponseConfig(
-            base_temperature=0.7,
-            max_candidates=5,
-            quality_threshold=0.8
-        )
-        
-        self.layer_weights = LayerWeights(
-            initial_understanding={
-                "concept_weight": 0.8,
-                "practical_weight": 0.2,
-                "knowledge_weight": 0.3
-            },
-            relationship_analysis={
-                "concept_weight": 0.7,
-                "practical_weight": 0.3,
-                "knowledge_weight": 0.5
-            },
-            contextual_integration={
-                "concept_weight": 0.6,
-                "practical_weight": 0.4,
-                "knowledge_weight": 0.8
-            },
-            synthesis={
-                "concept_weight": 0.4,
-                "practical_weight": 0.6,
-                "knowledge_weight": 0.6
-            }
-        )
-```
-
-## Performance Optimization
-
-- **Caching Strategy**
-  - LRU cache for similarity calculations
-  - Concept embedding cache
-  - Template rendering cache
-  
-- **Batch Processing**
-  - Vectorization batching
-  - Parallel concept processing
-  - Async knowledge base updates
-
-- **Memory Management**
-  - Rolling window corpus management
-  - Periodic cache cleanup
-  - Lazy loading of knowledge base segments
+- LRU caching for similarity calculations
+- Batched vectorization processing
+- Lazy knowledge base loading
+- Thread pool for concurrent operations
+- Adaptive corpus management
 
 ## System Requirements
 
 - Python 3.8+
 - Dependencies:
-  - NLTK >= 3.6
+  - nltk >= 3.6
   - scikit-learn >= 0.24
   - numpy >= 1.19
+  - networkx >= 2.5
   - requests >= 2.25
-  - sseclient-py >= 1.7
   - python-dotenv >= 0.19
 
 ## License
