@@ -1,0 +1,7 @@
+nltk
+scikit-learn
+numpy
+networkx
+requests
+python-dotenv
+openai
