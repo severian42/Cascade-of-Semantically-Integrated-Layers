@@ -1,15 +1,15 @@
-# Cascade of Semantically Integrated Layers (CSIL)
+# Cascade of Semantically Integrated Layers (CaSIL)
 
 ## Overview
 
-The **Cascade of Semantically Integrated Layers (CSIL)** is a pure Python algorithm that enriches responses from any LLM by layering semantic understanding and contextual depth. CSIL breaks down input through a series of processing layers, adding detail, context, and even a bit of insight along the way. No fancy frameworks, just Python being clever with a little help from `nltk`, `networkx`, and `scikit-learn`.
+The **Cascade of Semantically Integrated Layers (CaSIL)** is a pure Python algorithm that enriches responses from any LLM by layering semantic understanding and contextual depth. CSIL breaks down input through a series of processing layers, adding detail, context, and even a bit of insight along the way. No fancy frameworks, just Python being clever with a little help from `nltk`, `networkx`, and `scikit-learn`.
 
 ---
 
 
-## How CSIL Works
+## How CaSIL Works
 
-CSIL processes input through four structured layers, each building on the previous to achieve a detailed, context-rich output. This layered approach helps the model not only understand questions but respond in a way that feels more human, intuitive, and informed.
+CaSIL processes input through four structured layers, each building on the previous to achieve a detailed, context-rich output. This layered approach helps the model not only understand questions but respond in a way that feels more human, intuitive, and informed.
 
 ### Layer Breakdown
 
@@ -85,7 +85,7 @@ def process_semantic_cascade(self, user_input: str) -> Dict[str, Any]:
 
 ### Knowledge Graph Management
 
-CSIL uses a knowledge graph to capture concepts and connections over time, updating based on input:
+CaSIL uses a knowledge graph to capture concepts and connections over time, updating based on input:
 
 ```python
 def _update_knowledge_graph(self, concepts: List[str], relationships: List[Tuple[str, str, float]]) -> None:
@@ -112,7 +112,7 @@ def _update_knowledge_graph(self, concepts: List[str], relationships: List[Tuple
 
 ### Configuration and Adaptability
 
-CSILâ€™s configuration allows for fine-tuning thresholds, processing options, adaptive response management, and an optional knowledge base toggle:
+CaSIL's configuration allows for fine-tuning thresholds, processing options, adaptive response management, and an optional knowledge base toggle:
 
 ```python
 @dataclass
