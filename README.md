@@ -49,7 +49,7 @@ python main.py --debug # (Shows full internal insight and metrics)
 
 ```bash
 # Start the system
-python main.py
+python main.py --debug
 
 # Available commands:
 help      # Show available commands
