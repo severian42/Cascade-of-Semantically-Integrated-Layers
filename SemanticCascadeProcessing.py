@@ -37,6 +37,7 @@ from sklearn.cluster import DBSCAN
 import networkx as nx
 from sklearn.decomposition import TruncatedSVD
 from sklearn.neighbors import NearestNeighbors
+from tabulate import tabulate
 
 # Load environment variables
 load_dotenv()
@@ -293,6 +294,93 @@ class KnowledgeGraphContext:
             
         except Exception as e:
             raise RuntimeError(f"Failed to add concept {concept}: {str(e)}")
+
+    def print_graph_summary(self, max_items: int = 5) -> None:
+        """Print a structured summary of the knowledge graph."""
+        try:
+            if not self.knowledge_graph.nodes():
+                print_colored("Knowledge graph is empty.", 'blue')
+                return
+                
+            # 1. Basic Statistics
+            print_colored("\n📊 Knowledge Graph Statistics:", 'blue')
+            print_colored(f"Total Concepts: {len(self.knowledge_graph.nodes())}", 'green')
+            print_colored(f"Total Relationships: {len(self.knowledge_graph.edges())}", 'green')
+            
+            # 2. Most Frequent Concepts
+            print_colored("\n🔝 Most Frequent Concepts:", 'blue')
+            frequent_concepts = sorted(
+                self.knowledge_graph.nodes(data=True),
+                key=lambda x: x[1].get('frequency', 0),
+                reverse=True
+            )[:max_items]
+            
+            table_data = [
+                [i+1, concept, data.get('frequency', 0), 
+                 data.get('last_seen', 'N/A')[:19]]  # Truncate timestamp
+                for i, (concept, data) in enumerate(frequent_concepts)
+            ]
+            print(tabulate(
+                table_data,
+                headers=['Rank', 'Concept', 'Frequency', 'Last Seen'],
+                tablefmt='simple'
+            ))
+            
+            # 3. Strongest Relationships
+            print_colored("\n🔗 Strongest Relationships:", 'blue')
+            strong_edges = sorted(
+                self.knowledge_graph.edges(data=True),
+                key=lambda x: x[2].get('weight', 0),
+                reverse=True
+            )[:max_items]
+            
+            table_data = [
+                [i+1, f"{c1} → {c2}", f"{data.get('weight', 0):.3f}"]
+                for i, (c1, c2, data) in enumerate(strong_edges)
+            ]
+            print(tabulate(
+                table_data,
+                headers=['Rank', 'Relationship', 'Strength'],
+                tablefmt='simple'
+            ))
+            
+            # 4. Recent Additions
+            print_colored("\n🕒 Recently Added Concepts:", 'blue')
+            recent_concepts = sorted(
+                self.knowledge_graph.nodes(data=True),
+                key=lambda x: x[1].get('first_seen', ''),
+                reverse=True
+            )[:max_items]
+            
+            table_data = [
+                [i+1, concept, data.get('first_seen', 'N/A')[:19]]
+                for i, (concept, data) in enumerate(recent_concepts)
+            ]
+            print(tabulate(
+                table_data,
+                headers=['Rank', 'Concept', 'First Seen'],
+                tablefmt='simple'
+            ))
+            
+            # 5. Concept Clusters (if available)
+            try:
+                communities = list(nx.community.greedy_modularity_communities(
+                    self.knowledge_graph.to_undirected()
+                ))
+                if communities:
+                    print_colored(f"\n👥 Concept Communities ({len(communities)} total):", 'blue')
+                    for i, community in enumerate(communities[:3], 1):
+                        concepts = list(community)[:5]
+                        print_colored(
+                            f"Community {i} ({len(community)} concepts): "
+                            f"{', '.join(concepts)}{'...' if len(community) > 5 else ''}",
+                            'green'
+                        )
+            except Exception:
+                pass  # Skip community detection if it fails
+                
+        except Exception as e:
+            print_colored(f"Error displaying graph: {str(e)}", 'red')
 
 class CascadeSemanticLayerProcessor:
     """
