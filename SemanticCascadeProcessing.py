@@ -244,6 +244,48 @@ class CategoryConfig:
     context_weight: float
     knowledge_weight: float
 
+@dataclass
+class SessionContext:
+    """Tracks session-specific learning context"""
+    conversation: Conversation = field(default_factory=Conversation)
+    session_graph: nx.DiGraph = field(default_factory=nx.DiGraph)
+    concept_cache: Dict[str, float] = field(default_factory=dict)
+    session_start: datetime = field(default_factory=datetime.now)
+    
+    def reset(self):
+        """Reset session context"""
+        self.conversation = Conversation()
+        self.session_graph = nx.DiGraph()
+        self.concept_cache.clear()
+        self.session_start = datetime.now()
+
+@dataclass
+class KnowledgeGraphContext:
+    """Tracks persistent knowledge and concept relationships"""
+    knowledge_graph: nx.DiGraph = field(default_factory=nx.DiGraph)
+    concept_metadata: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    entity_relationships: Dict[str, Set[str]] = field(default_factory=dict)
+    
+    def add_concept(
+        self, 
+        concept: str, 
+        metadata: Dict[str, Any]
+    ) -> None:
+        """Add or update concept in knowledge graph"""
+        if concept not in self.knowledge_graph:
+            self.knowledge_graph.add_node(
+                concept, 
+                first_seen=datetime.now().isoformat(),
+                frequency=1,
+                **metadata
+            )
+        else:
+            # Update existing concept
+            self.knowledge_graph.nodes[concept]['frequency'] += 1
+            self.knowledge_graph.nodes[concept].update(metadata)
+            
+        self.concept_metadata[concept] = metadata
+
 class CascadeSemanticLayerProcessor:
     """
     Main processor implementing the Cascade of Semantically Integrated Layers 
@@ -410,8 +452,9 @@ class CascadeSemanticLayerProcessor:
             )
         }
         
-        self.concept_graph = nx.Graph()
-        self.knowledge_graph = nx.DiGraph()  # Add directed knowledge graph
+        # Maintain both session and persistent knowledge contexts
+        self.session = SessionContext()
+        self.knowledge = KnowledgeGraphContext()
         
     @property
     def thread_pool(self):
@@ -1043,7 +1086,7 @@ class CascadeSemanticLayerProcessor:
                 f"Practical weight: {weights['practical_weight']:.2f}",
                 f"Novelty threshold: {novelty_score:.2f}",
                 "\nThought connectors to consider:",
-                *connectors[:2]  # Use first two connectors
+                *connectors[:2]
             ]
             
             # Add relevant knowledge to prompt
@@ -1468,22 +1511,31 @@ class CascadeSemanticLayerProcessor:
                 "practical_weight": 0.8 if layer_config["processing_style"]["focus"] == "practical" else 0.6
             }
             
-            # Integrate knowledge base
-            knowledge = self._integrate_knowledge_base(layer_name, concepts)
+            # Get both session and knowledge graph insights
+            session_concepts = self._extract_key_concepts(user_input)
+            session_subgraph = self._extract_session_subgraph(
+                session_concepts, 
+                depth=2
+            )
             
-            if self.config.debug_mode:
-                print("  ├─ Building prompt...")
-                
-            # Build enhanced prompt with all required arguments
+            # Combine session and knowledge insights
+            context_insights = self._combine_context_insights(
+                session_subgraph=session_subgraph,
+                knowledge_subgraph=self._extract_knowledge_subgraph(
+                    session_concepts
+                )
+            )
+            
+            # Update prompt generation to use combined context
             prompt = self._generate_enhanced_layer_prompt(
                 layer_name=layer_name,
                 user_input=user_input,
                 previous_output=previous_output,
                 instructions=layer_config["instructions"],
                 weights=weights,
-                novelty_score=novelty_score,  # Added missing argument
-                knowledge=knowledge,  # Added missing argument
-                processing_style=layer_config["processing_style"]  # Added missing argument
+                novelty_score=novelty_score,
+                context_insights=context_insights,
+                processing_style=layer_config["processing_style"]
             )
             
             if self.config.debug_mode:
@@ -1510,8 +1562,6 @@ class CascadeSemanticLayerProcessor:
         except Exception as e:
             if self.config.debug_mode:
                 print(f"\n❌ Error in layer {layer_name}: {str(e)}")
-                import traceback
-                print(traceback.format_exc())
             return f"Error processing {layer_name} layer: {str(e)}"
 
     def _generate_enhanced_layer_prompt(
@@ -1522,7 +1572,7 @@ class CascadeSemanticLayerProcessor:
         instructions: List[str],
         weights: Dict[str, float],
         novelty_score: float,
-        knowledge: Dict[str, Any],
+        context_insights: Dict[str, Any],
         processing_style: Dict[str, Any]
     ) -> str:
         """
@@ -1535,7 +1585,7 @@ class CascadeSemanticLayerProcessor:
             instructions: Layer-specific instructions
             weights: Layer-specific weights
             novelty_score: Calculated novelty score
-            knowledge: Knowledge base content
+            context_insights: Session-specific context
             processing_style: Processing style configuration
             
         Returns:
@@ -1558,23 +1608,35 @@ class CascadeSemanticLayerProcessor:
                 f"Novelty Score: {novelty_score:.2f}"
             ]
             
-            # Add knowledge base content if available
-            if knowledge['concepts']:
+            # Add session context if available
+            if context_insights['recent_concepts']:
                 prompt_parts.extend([
                     "\nRelevant Concepts:",
-                    *[f"- {c}" for c in knowledge['concepts'][:3]]
+                    *[f"- {c}" for c in context_insights['recent_concepts'][:3]]
                 ])
                 
-            if knowledge['examples']:
+            if context_insights['session_relationships']:
                 prompt_parts.extend([
-                    "\nRelevant Examples:",
-                    *[f"- {e}" for e in knowledge['examples'][:2]]
+                    "\nRelevant Relationships:",
+                    *[f"- {u} → {v} ({d['weight']:.2f})" for u, v, d in context_insights['session_relationships'][:3]]
                 ])
                 
-            if knowledge['context']:
+            if context_insights['persistent_concepts']:
                 prompt_parts.extend([
-                    "\nBroader Context:",
-                    *[f"- {c}" for c in knowledge['context'][:2]]
+                    "\nPersistent Concepts:",
+                    *[f"- {c} ({d['weight']:.2f})" for c, d in context_insights['persistent_concepts'][:3]]
+                ])
+                
+            if context_insights['knowledge_relationships']:
+                prompt_parts.extend([
+                    "\nPersistent Relationships:",
+                    *[f"- {u} → {v} ({d['weight']:.2f})" for u, v, d in context_insights['knowledge_relationships'][:3]]
+                ])
+                
+            if context_insights['conversation_context']:
+                prompt_parts.extend([
+                    "\nConversation Context:",
+                    *[f"- {c}" for c in context_insights['conversation_context'][:2]]
                 ])
                 
             return "\n".join(prompt_parts)
@@ -1790,63 +1852,144 @@ class CascadeSemanticLayerProcessor:
                 
         return sorted(scored_contexts, reverse=True)
 
-    def _update_knowledge_graph(
+    def _update_session_context(
         self, 
         concepts: List[str], 
         relationships: List[Tuple[str, str, float]]
     ) -> None:
-        """
-        Update internal knowledge graph with new concepts and relationships.
+        """Update session-specific context"""
+        # Add concepts with recency weighting
+        current_time = datetime.now()
+        time_weight = 1.0  # Decay factor for older concepts
         
-        Args:
-            concepts: List of concepts to add
-            relationships: List of (concept1, concept2, weight) relationships
-        """
-        # Add new concepts
         for concept in concepts:
-            if concept not in self.knowledge_graph:
-                self.knowledge_graph.add_node(
-                    concept, 
-                    first_seen=datetime.now(),
-                    frequency=1
+            if concept not in self.session.session_graph:
+                self.session.session_graph.add_node(
+                    concept,
+                    first_seen=current_time,
+                    weight=time_weight
                 )
             else:
-                # Update existing concept
-                self.knowledge_graph.nodes[concept]['frequency'] += 1
-                
-        # Add or update relationships
-        for c1, c2, weight in relationships:
-            if self.knowledge_graph.has_edge(c1, c2):
-                # Update existing relationship weight
-                current_weight = self.knowledge_graph[c1][c2]['weight']
-                new_weight = (current_weight + weight) / 2
-                self.knowledge_graph[c1][c2]['weight'] = new_weight
-            else:
-                # Add new relationship
-                self.knowledge_graph.add_edge(c1, c2, weight=weight)
+                # Update existing concept weight
+                prev_weight = self.session.session_graph.nodes[concept]['weight']
+                self.session.session_graph.nodes[concept]['weight'] = (
+                    prev_weight + time_weight
+                ) / 2
 
-    def _extract_subgraph(self, concepts: List[str], depth: int = 2) -> nx.DiGraph:
-        """
-        Extract relevant subgraph for given concepts.
+        # Update relationships with temporal context
+        for c1, c2, weight in relationships:
+            if self.session.session_graph.has_edge(c1, c2):
+                prev_weight = self.session.session_graph[c1][c2]['weight']
+                new_weight = (prev_weight + (weight * time_weight)) / 2
+                self.session.session_graph[c1][c2]['weight'] = new_weight
+            else:
+                self.session.session_graph.add_edge(
+                    c1, c2, 
+                    weight=weight * time_weight
+                )
+
+    def _extract_session_subgraph(
+        self, 
+        concepts: List[str], 
+        depth: int = 2
+    ) -> nx.DiGraph:
+        """Extract relevant subgraph from session context"""
+        relevant_nodes = set(concepts)
         
-        Args:
-            concepts: Seed concepts to start from
-            depth: How many hops to explore
-            
-        Returns:
-            Subgraph containing relevant concepts and relationships
-        """
-        relevant_nodes: Set[str] = set(concepts)
-        
-        # Expand by exploring neighbors up to specified depth
+        # Explore session-specific relationships
         for _ in range(depth):
             neighbors = set()
             for node in relevant_nodes:
-                if node in self.knowledge_graph:
-                    neighbors.update(self.knowledge_graph.neighbors(node))
+                if node in self.session.session_graph:
+                    neighbors.update(
+                        self.session.session_graph.neighbors(node)
+                    )
             relevant_nodes.update(neighbors)
             
-        return self.knowledge_graph.subgraph(relevant_nodes)
+        return self.session.session_graph.subgraph(relevant_nodes)
+
+    def _analyze_session_context(
+        self, 
+        subgraph: nx.DiGraph
+    ) -> Dict[str, Any]:
+        """Analyze session-specific patterns and relationships"""
+        return {
+            'recent_concepts': sorted(
+                subgraph.nodes(), 
+                key=lambda x: subgraph.nodes[x].get('weight', 0),
+                reverse=True
+            )[:5],
+            'key_relationships': [
+                (u, v, d['weight']) 
+                for u, v, d in subgraph.edges(data=True)
+                if d['weight'] > self.config.similarity_threshold
+            ],
+            'conversation_context': (
+                self.session.conversation.get_recent_context()
+            )
+        }
+
+    def _combine_context_insights(
+        self,
+        session_subgraph: nx.DiGraph,
+        knowledge_subgraph: nx.DiGraph
+    ) -> Dict[str, Any]:
+        """Combine session and knowledge graph insights"""
+        session_insights = self._analyze_session_context(session_subgraph)
+        knowledge_insights = self._analyze_knowledge_subgraph(knowledge_subgraph)
+        
+        return {
+            'recent_concepts': session_insights['recent_concepts'],
+            'session_relationships': session_insights['key_relationships'],
+            'persistent_concepts': knowledge_insights['central_concepts'],
+            'knowledge_relationships': knowledge_insights['key_relationships'],
+            'conversation_context': session_insights['conversation_context'],
+            'concept_metadata': {
+                node: self.knowledge.concept_metadata.get(node, {})
+                for node in session_insights['recent_concepts']
+            }
+        }
+
+    def _extract_knowledge_subgraph(
+        self, 
+        concepts: List[str], 
+        depth: int = 2
+    ) -> nx.DiGraph:
+        """Extract relevant subgraph from knowledge graph"""
+        relevant_nodes = set(concepts)
+        
+        # Explore knowledge graph relationships
+        for _ in range(depth):
+            neighbors = set()
+            for node in relevant_nodes:
+                if node in self.knowledge.knowledge_graph:
+                    neighbors.update(
+                        self.knowledge.knowledge_graph.neighbors(node)
+                    )
+            relevant_nodes.update(neighbors)
+            
+        return self.knowledge.knowledge_graph.subgraph(relevant_nodes)
+
+    def _analyze_knowledge_subgraph(
+        self, 
+        subgraph: nx.DiGraph
+    ) -> Dict[str, Any]:
+        """Analyze knowledge graph patterns and relationships"""
+        return {
+            'central_concepts': sorted(
+                nx.pagerank(subgraph).items(),
+                key=lambda x: x[1],
+                reverse=True
+            )[:5],
+            'key_relationships': [
+                (u, v, d['weight']) 
+                for u, v, d in subgraph.edges(data=True)
+                if d['weight'] > self.config.similarity_threshold
+            ],
+            'concept_clusters': self._cluster_concepts(
+                list(subgraph.nodes())
+            )
+        }
 
     def analyze_knowledge_graph(self) -> Dict[str, Any]:
         """
