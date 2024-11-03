@@ -24,7 +24,7 @@ import requests
 import json
 import sseclient
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from nltk_utils import ensure_nltk_resources
 from dotenv import load_dotenv
 from pathlib import Path
@@ -129,7 +129,11 @@ class CSILConfig:
     keyword_weight_threshold: float = 0.1
     similarity_threshold: float = 0.1
     max_results: Optional[int] = None
-    llm_config: LLMConfig = field(default_factory=LLMConfig)
+    llm_config: LLMConfig = field(
+        default_factory=lambda: LLMConfig(
+            temperature=0.6
+        )
+    )
     debug_mode: bool = False
     use_external_knowledge: bool = field(
         default_factory=lambda: os.getenv('USE_EXTERNAL_KNOWLEDGE', 'false').lower() == 'true'
@@ -554,6 +558,15 @@ class CascadeSemanticLayerProcessor:
         
         # Add tracking for processed queries
         self.processed_queries = 0
+        
+        # Enhance caching mechanism
+        self._similarity_cache = {}
+        self._concept_cache = {}
+        self._processed_pairs = set()
+        
+        # Add deduplication tracking
+        self._concept_normalizer = {}  # Maps variants to canonical forms
+        self._concept_metadata = {}    # Stores metadata for canonical forms
 
     @property
     def thread_pool(self):
@@ -564,49 +577,70 @@ class CascadeSemanticLayerProcessor:
             )
         return self._thread_pool
 
-    @lru_cache(maxsize=1000)
+    def _normalize_concept(self, concept: str) -> str:
+        """Normalize concept to canonical form."""
+        try:
+            # Basic normalization
+            normalized = concept.lower().strip()
+            
+            # Return cached canonical form if exists
+            if normalized in self._concept_normalizer:
+                return self._concept_normalizer[normalized]
+            
+            # Store new canonical form
+            self._concept_normalizer[normalized] = normalized
+            return normalized
+            
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error normalizing concept: {str(e)}")
+            return concept
+
     def _calculate_semantic_similarity(
         self, 
         text1: str, 
         text2: str,
         use_cache: bool = True
     ) -> float:
-        """Calculate semantic similarity with improved caching."""
-        # Create cache key
-        cache_key = (text1.strip(), text2.strip())
-        
-        # Skip empty texts
-        if not cache_key[0] or not cache_key[1]:
-            return 0.0
-            
+        """Calculate semantic similarity with improved caching and deduplication."""
         try:
-            # Check cache if enabled
-            if use_cache and cache_key in self._vector_cache:
-                return self._vector_cache[cache_key]
+            # Create cache key with normalized texts
+            cache_key = tuple(sorted([
+                self._normalize_concept(text1),
+                self._normalize_concept(text2)
+            ]))
             
-            # Calculate similarity
+            # Skip if already processed
+            if cache_key in self._processed_pairs:
+                return self._similarity_cache.get(cache_key, 0.0)
+            
+            # Mark as processed
+            self._processed_pairs.add(cache_key)
+            
+            # Calculate similarity only if needed
+            if use_cache and cache_key in self._similarity_cache:
+                return self._similarity_cache[cache_key]
+            
+            # Perform calculation
             vectors = self.vectorizer.transform([text1, text2])
             cos_sim = cosine_similarity(vectors[0:1], vectors[1:2])[0][0]
             
-            # Calculate Jaccard similarity
             words1 = set(word_tokenize(text1.lower()))
             words2 = set(word_tokenize(text2.lower()))
             jaccard = len(words1 & words2) / len(words1 | words2) if words1 | words2 else 0
             
-            # Combine similarities
             combined_sim = (0.7 * cos_sim) + (0.3 * jaccard)
             result = max(0.0, min(1.0, combined_sim))
             
-            # Cache result if enabled
-            if use_cache:
-                self._vector_cache[cache_key] = result
-                
-                # Debug output only for new calculations
-                if self.config.debug_mode:
-                    print(f"\nSimilarity Calculation (new):")
-                    print(f"- Cosine similarity: {cos_sim:.3f}")
-                    print(f"- Jaccard similarity: {jaccard:.3f}")
-                    print(f"- Combined similarity: {combined_sim:.3f}")
+            # Cache result
+            self._similarity_cache[cache_key] = result
+            
+            # Debug output only for new calculations
+            if self.config.debug_mode:
+                print(f"\nSimilarity Calculation (new for {cache_key}):")
+                print(f"- Cosine similarity: {cos_sim:.3f}")
+                print(f"- Jaccard similarity: {jaccard:.3f}")
+                print(f"- Combined similarity: {combined_sim:.3f}")
             
             return result
             
@@ -855,7 +889,7 @@ class CascadeSemanticLayerProcessor:
                 "synthesis",
                 user_input,
                 results['context_integration'],
-                "Create a cohesive response that builds upon all previous layers."
+                "Create a cohesive final response that builds upon all previous layers and directly answers the users query and/or intent. Make sure your response is readable an in conversation format."
             )
             
             return results
@@ -940,71 +974,45 @@ class CascadeSemanticLayerProcessor:
     def _calculate_dynamic_temperature(
         self,
         novelty_score: float,
-        layer_name: str = None,
-        context_complexity: float = None
+        layer_name: str
     ) -> float:
-        """
-        Enhanced temperature calculation with context complexity.
+        """Calculate dynamic temperature with more conservative scaling.
         
         Args:
-            novelty_score: Base novelty score
-            layer_name: Processing layer name
-            context_complexity: Optional complexity score of current context
+            novelty_score: Score indicating content novelty (0.0-1.0)
+            layer_name: Name of current processing layer
             
         Returns:
-            float: Optimized temperature value
+            float: Calculated temperature value (0.1-1.0)
         """
         try:
-            base_temp = self.config.llm_config.temperature
+            # Lower base temperature from config
+            base_temp = min(0.4, float(self.config.llm_config.temperature))
             
-            # Enhanced layer-specific modifiers
-            layer_modifier = {
-                "initial_understanding": {
-                    'base': 0.8,
-                    'novelty_weight': 0.3,
-                    'complexity_weight': 0.2
-                },
-                "relationship_analysis": {
-                    'base': 1.0,
-                    'novelty_weight': 0.4,
-                    'complexity_weight': 0.3
-                },
-                "contextual_integration": {
-                    'base': 1.2,
-                    'novelty_weight': 0.5,
-                    'complexity_weight': 0.4
-                },
-                "synthesis": {
-                    'base': 0.9,
-                    'novelty_weight': 0.3,
-                    'complexity_weight': 0.3
-                }
-            }.get(layer_name, {
-                'base': 1.0,
-                'novelty_weight': 0.3,
-                'complexity_weight': 0.3
-            })
+            # Reduced layer-specific adjustments
+            layer_adjustments = {
+                "initial_understanding": 0.0,    # Keep factual
+                "relationship_analysis": 0.05,   # Slight creativity
+                "contextual_integration": 0.1,   # Moderate creativity
+                "synthesis": 0.15               # Most creative layer
+            }
             
-            # Calculate complexity factor
-            complexity_factor = (
-                context_complexity if context_complexity is not None 
-                else 0.5
-            )
+            # Get layer adjustment with default
+            layer_adj = layer_adjustments.get(layer_name, 0.0)
             
-            # Enhanced temperature calculation
-            adjusted_temp = (
-                base_temp * 
-                layer_modifier['base'] * 
-                (1 + (novelty_score * layer_modifier['novelty_weight'])) *
-                (1 + (complexity_factor * layer_modifier['complexity_weight']))
-            )
+            # Scale novelty influence
+            novelty_influence = novelty_score * 0.2  # Reduce novelty impact
             
-            return max(0.1, min(1.0, adjusted_temp))
+            # Calculate final temperature with dampened scaling
+            final_temp = base_temp + (layer_adj * novelty_influence)
+            
+            # Ensure temperature stays within more conservative range
+            return max(0.1, min(0.7, final_temp))
             
         except Exception as e:
             if self.config.debug_mode:
-                print(f"Temperature calculation error: {str(e)}")
-            return 0.7
+                print(f"Error calculating temperature: {str(e)}")
+            return 0.3  # Conservative fallback temperature
 
     def _call_llm(
         self,
@@ -1099,50 +1107,33 @@ class CascadeSemanticLayerProcessor:
             return f"Error in LLM processing: {str(e)}"
 
     def _calculate_concept_novelty(
-        self, 
-        current_concepts: List[str], 
-        previous_concepts: set
+        self,
+        current_concepts: List[str],
+        previous_concepts: Set[str]
     ) -> float:
-        """
-        Calculate novelty score using semantic similarity and concept weights.
-        
-        Args:
-            current_concepts: New concepts from current layer
-            previous_concepts: Previously seen concepts
+        """Calculate novelty score with improved type safety."""
+        try:
+            if not current_concepts:
+                return 0.0
+                
+            # Ensure we're working with sets
+            current_set = set(current_concepts)
+            previous_set = set(previous_concepts) if previous_concepts else set()
             
-        Returns:
-            float: Novelty score between 0 and 1, weighted by concept importance
-        """
-        if not current_concepts or not previous_concepts:
-            return 1.0
-        
-        # Convert concepts to sentence form for better vectorization
-        current_texts = [' '.join(c.split('_')) for c in current_concepts]
-        previous_texts = [' '.join(c.split('_')) for c in previous_concepts]
-        
-        # Calculate TF-IDF weights for current concepts
-        self._fit_vectorizer()
-        current_vectors = self.vectorizer.transform(current_texts)
-        
-        # Calculate maximum similarity for each current concept
-        novelty_scores = []
-        for i, current_vec in enumerate(current_vectors):
-            similarities = cosine_similarity(
-                current_vec, 
-                self.vectorizer.transform(previous_texts)
-            )[0]
-            # Use complement of maximum similarity as novelty
-            concept_novelty = 1.0 - (max(similarities) if len(similarities) > 0 else 0.0)
+            # Calculate novelty metrics
+            new_concepts = len(current_set - previous_set)
+            total_concepts = len(current_set)
             
-            # Weight by concept importance (TF-IDF magnitude)
-            concept_weight = np.sqrt(np.sum(current_vec.toarray() ** 2))
-            novelty_scores.append(concept_novelty * concept_weight)
-        
-        # Aggregate weighted novelty scores
-        if novelty_scores:
-            avg_novelty = sum(novelty_scores) / len(novelty_scores)
-            return max(0.1, min(1.0, avg_novelty))
-        return 1.0
+            # Avoid division by zero
+            if total_concepts == 0:
+                return 0.0
+                
+            return float(new_concepts) / total_concepts
+            
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error calculating novelty: {str(e)}")
+            return 0.0
 
     def _generate_enhanced_prompt(
         self,
@@ -1533,8 +1524,12 @@ class CascadeSemanticLayerProcessor:
                     print(f"    • {concept}")
                 print("  ├─ Calculating novelty...")
             
-            # Track previously seen concepts
-            previous_concepts = set(self._extract_key_concepts(previous_output))
+            # Track previously seen concepts with type safety
+            previous_concepts = set()
+            if isinstance(previous_output, str):
+                previous_concepts = set(self._extract_key_concepts(previous_output))
+            
+            # Calculate novelty with type checking
             novelty_score = self._calculate_concept_novelty(
                 concepts, 
                 previous_concepts
@@ -1582,9 +1577,9 @@ class CascadeSemanticLayerProcessor:
             if self.config.debug_mode:
                 print("  ├─ Calculating temperature...")
             
-            # Calculate dynamic temperature
+            # Calculate dynamic temperature with type safety
             temperature = self._calculate_dynamic_temperature(
-                novelty_score,
+                float(novelty_score),  # Ensure float type
                 layer_name
             )
             
@@ -2078,28 +2073,50 @@ class CascadeSemanticLayerProcessor:
         try:
             current_time = datetime.now().isoformat()
             
-            # Calculate relationships between concepts
-            relationships = []
-            for i, c1 in enumerate(concepts):
-                for c2 in concepts[i+1:]:
-                    similarity = self._calculate_semantic_similarity(c1, c2)
-                    if similarity > self.config.similarity_threshold:
-                        relationships.append((c1, c2, similarity))
-            
-            # Update session graph
-            self._update_session_context(concepts, relationships)
-            
-            # Update knowledge graph
+            # Normalize and deduplicate concepts
+            normalized_concepts = []
             for concept in concepts:
-                self.knowledge.add_concept(concept, {
-                    'last_seen': current_time,
-                    'context': context[:100],  # Store truncated context
-                    'frequency': self.knowledge.concept_metadata.get(
-                        concept, {}
-                    ).get('frequency', 0) + 1
-                })
+                norm_concept = self._normalize_concept(concept)
+                if norm_concept not in normalized_concepts:
+                    normalized_concepts.append(norm_concept)
             
-            # Add relationships to knowledge graph
+            # Calculate relationships efficiently
+            relationships = []
+            processed_pairs = set()
+            
+            for i, c1 in enumerate(normalized_concepts):
+                for c2 in normalized_concepts[i+1:]:
+                    pair = tuple(sorted([c1, c2]))
+                    if pair not in processed_pairs:
+                        processed_pairs.add(pair)
+                        similarity = self._calculate_semantic_similarity(c1, c2)
+                        if similarity > self.config.similarity_threshold:
+                            relationships.append((c1, c2, similarity))
+            
+            # Update session graph with deduplication
+            self._update_session_context(normalized_concepts, relationships)
+            
+            # Update knowledge graph with deduplication
+            for concept in normalized_concepts:
+                # Get or create metadata
+                metadata = self._concept_metadata.get(concept, {
+                    'first_seen': current_time,
+                    'frequency': 0,
+                    'contexts': set()
+                })
+                
+                # Update metadata
+                metadata['last_seen'] = current_time
+                metadata['frequency'] += 1
+                metadata['contexts'].add(context[:100])  # Store truncated context
+                
+                # Store updated metadata
+                self._concept_metadata[concept] = metadata
+                
+                # Add to knowledge graph
+                self.knowledge.add_concept(concept, metadata)
+            
+            # Add relationships to knowledge graph with weight averaging
             for c1, c2, weight in relationships:
                 if not self.knowledge.knowledge_graph.has_edge(c1, c2):
                     self.knowledge.knowledge_graph.add_edge(
@@ -2108,15 +2125,61 @@ class CascadeSemanticLayerProcessor:
                         first_seen=current_time
                     )
                 else:
-                    # Update existing relationship
-                    prev_weight = self.knowledge.knowledge_graph[c1][c2]['weight']
-                    self.knowledge.knowledge_graph[c1][c2]['weight'] = (
-                        prev_weight + weight
-                    ) / 2
+                    # Update existing relationship with moving average
+                    edge_data = self.knowledge.knowledge_graph[c1][c2]
+                    prev_weight = edge_data['weight']
+                    edge_data['weight'] = (prev_weight * 0.7) + (weight * 0.3)
                     
         except Exception as e:
             if self.config.debug_mode:
                 print(f"Error updating graphs: {str(e)}")
+
+    def _cleanup_knowledge_graph(self, max_age_days: int = 30) -> None:
+        """Periodically cleanup old or redundant entries."""
+        try:
+            current_time = datetime.now()
+            threshold = current_time - timedelta(days=max_age_days)
+            
+            # Remove old concepts
+            nodes_to_remove = []
+            for node, data in self.knowledge.knowledge_graph.nodes(data=True):
+                last_seen = datetime.fromisoformat(data.get('last_seen', ''))
+                if last_seen < threshold:
+                    nodes_to_remove.append(node)
+            
+            # Remove nodes and their edges
+            self.knowledge.knowledge_graph.remove_nodes_from(nodes_to_remove)
+            
+            # Cleanup caches
+            self._cleanup_caches()
+            
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error cleaning knowledge graph: {str(e)}")
+
+    def _cleanup_caches(self) -> None:
+        """Cleanup cache dictionaries to prevent memory bloat."""
+        try:
+            # Keep only recent entries
+            max_cache_size = 1000
+            
+            if len(self._similarity_cache) > max_cache_size:
+                self._similarity_cache = dict(
+                    sorted(
+                        self._similarity_cache.items(),
+                        key=lambda x: len(x[1]),
+                        reverse=True
+                    )[:max_cache_size]
+                )
+            
+            if len(self._concept_cache) > max_cache_size:
+                self._concept_cache.clear()
+                
+            self._processed_pairs.clear()
+            
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error cleaning caches: {str(e)}")
 
 def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
     """
