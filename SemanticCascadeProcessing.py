@@ -1,5 +1,5 @@
 """
-Cascade of Semantically Integrated Layers (CSIL) Module
+Cascade of Semantically Integrated Layers (CaSIL) Module
 
 This module implements the Cascade of Semantically Integrated Layers algorithm, 
 which combines computational semantic analysis with progressive multi-layer 
@@ -41,48 +41,43 @@ from sklearn.neighbors import NearestNeighbors
 # Load environment variables
 load_dotenv()
 
-@dataclass
 class LLMConfig:
-    """
-    Configuration settings for Language Model API interactions.
-    
-    Attributes:
-        url (str): API endpoint URL for LLM service
-        model (str): Name/path of the language model to use
-        context_window (int): Maximum context window size
-        temperature (float): Base temperature for response generation
-        max_tokens (int): Maximum tokens in generated response
-        stream (bool): Whether to use streaming response
-        top_p (float): Nucleus sampling parameter
-        frequency_penalty (float): Penalty for frequent token use
-        presence_penalty (float): Penalty for repeated content
-        stop_sequences (List[str]): Sequences to stop generation
-        repeat_penalty (float): Additional penalty for repetition
-        seed (Optional[int]): Random seed for reproducibility
-    """
-    url: str = field(default_factory=lambda: os.getenv('LLM_URL', 
-        "http://0.0.0.0:11434/v1/chat/completions"))
-    model: str = field(default_factory=lambda: os.getenv('LLM_MODEL', 
-        "hf.co/arcee-ai/SuperNova-Medius-GGUF:f16"))
-    context_window: int = field(
-        default_factory=lambda: int(os.getenv('LLM_CONTEXT_WINDOW', 8192)))
-    temperature: float = field(
-        default_factory=lambda: float(os.getenv('LLM_TEMPERATURE', 0.6)))
-    max_tokens: int = field(
-        default_factory=lambda: int(os.getenv('LLM_MAX_TOKENS', 4096)))
-    stream: bool = field(default_factory=lambda: 
-        os.getenv('LLM_STREAM', 'true').lower() == 'true')
-    top_p: float = field(
-        default_factory=lambda: float(os.getenv('LLM_TOP_P', 0.9)))
-    frequency_penalty: float = field(
-        default_factory=lambda: float(os.getenv('LLM_FREQUENCY_PENALTY', 0.0)))
-    presence_penalty: float = field(
-        default_factory=lambda: float(os.getenv('LLM_PRESENCE_PENALTY', 0.0)))
-    stop_sequences: List[str] = field(default_factory=list)
-    repeat_penalty: float = field(
-        default_factory=lambda: float(os.getenv('LLM_REPEAT_PENALTY', 1.1)))
-    seed: Optional[int] = field(default_factory=lambda: 
-        int(os.getenv('LLM_SEED')) if os.getenv('LLM_SEED') else None)
+    """Configuration for LLM API calls."""
+    def __init__(
+        self,
+        url: str = os.getenv('LLM_URL', 'http://0.0.0.0:11434/v1/chat/completions'),
+        model: str = os.getenv('LLM_MODEL', 'hf.co/arcee-ai/SuperNova-Medius-GGUF:f16'),
+        context_window: int = int(os.getenv('LLM_CONTEXT_WINDOW', '8192')),
+        max_tokens: int = int(os.getenv('LLM_MAX_TOKENS', '4096')),
+        top_p: float = float(os.getenv('LLM_TOP_P', '0.9')),
+        frequency_penalty: float = float(os.getenv('LLM_FREQUENCY_PENALTY', '0.0')),
+        presence_penalty: float = float(os.getenv('LLM_PRESENCE_PENALTY', '0.0')),
+        repeat_penalty: float = float(os.getenv('LLM_REPEAT_PENALTY', '1.1')),
+        temperature: float = float(os.getenv('LLM_TEMPERATURE', '0.7')),
+        stream: bool = True,
+        stop_sequences: List[str] = None,
+        seed: Optional[int] = None
+    ):
+        """Initialize LLM configuration."""
+        self.url = url
+        self.model = model
+        self.context_window = context_window
+        self.max_tokens = max_tokens
+        self.top_p = top_p
+        self.frequency_penalty = frequency_penalty
+        self.presence_penalty = presence_penalty
+        self.repeat_penalty = repeat_penalty
+        self.temperature = temperature
+        self.stream = stream
+        self.stop_sequences = stop_sequences or []
+        self.seed = seed or None
+        
+        # Handle seed properly
+        seed_env = os.getenv('LLM_SEED')
+        try:
+            self.seed = int(seed_env) if seed_env and seed_env.isdigit() else seed
+        except (ValueError, TypeError):
+            self.seed = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary format."""
@@ -254,7 +249,7 @@ class CascadeSemanticLayerProcessor:
     Main processor implementing the Cascade of Semantically Integrated Layers 
     algorithm.
     
-    The CSIL algorithm processes user input through multiple layers of analysis:
+    The CaSIL algorithm processes user input through multiple layers of analysis:
     1. Initial Understanding: Basic concept extraction
     2. Semantic Analysis: Relationship discovery
     3. Context Integration: Broader implications
@@ -271,11 +266,11 @@ class CascadeSemanticLayerProcessor:
         
         # Modify vectorizer settings to handle small document counts
         self.vectorizer = TfidfVectorizer(
-            stop_words=None,  # We'll handle stop words separately
-            max_features=500,
+            stop_words=None,  
+            max_features=1000,
             ngram_range=(1, 1),
-            min_df=1,  # Changed from 2 to 1 to handle single documents
-            max_df=1.0,  # Allow terms that appear in all documents
+            min_df=1,  
+            max_df=1.0,
             strip_accents='unicode',
             token_pattern=r'(?u)\b\w+\b'
         )
@@ -1263,12 +1258,49 @@ class CascadeSemanticLayerProcessor:
 
     def _build_concept_graph(self, concepts: List[str]) -> None:
         """Build graph of concept relationships."""
-        for i, concept1 in enumerate(concepts):
-            for concept2 in concepts[i+1:]:
-                similarity = self._calculate_semantic_similarity(concept1, concept2)
-                if similarity > self.config.similarity_threshold:
-                    self.concept_graph.add_edge(concept1, concept2, weight=similarity)
+        try:
+            for i, concept1 in enumerate(concepts):
+                # Add node with frequency tracking
+                if concept1 not in self.concept_graph:
+                    self.concept_graph.add_node(concept1, frequency=1)
+                else:
+                    freq = self.concept_graph.nodes[concept1].get('frequency', 0)
+                    self.concept_graph.nodes[concept1]['frequency'] = freq + 1
                     
+                # Add to knowledge graph with metadata
+                if concept1 not in self.knowledge_graph:
+                    self.knowledge_graph.add_node(
+                        concept1, 
+                        frequency=1,
+                        first_seen=datetime.now().isoformat()
+                    )
+                
+                # Build relationships
+                for concept2 in concepts[i+1:]:
+                    similarity = self._calculate_semantic_similarity(
+                        concept1, 
+                        concept2
+                    )
+                    if similarity > self.config.similarity_threshold:
+                        # Update concept graph
+                        self.concept_graph.add_edge(
+                            concept1, 
+                            concept2, 
+                            weight=similarity
+                        )
+                        
+                        # Update knowledge graph (directed)
+                        self.knowledge_graph.add_edge(
+                            concept1, 
+                            concept2, 
+                            weight=similarity,
+                            last_updated=datetime.now().isoformat()
+                        )
+                        
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error building concept graph: {str(e)}")
+
     def _analyze_concept_relationships(self) -> Dict[str, float]:
         """Analyze relationships using graph centrality."""
         return pagerank(self.concept_graph)  # Get concept importance
@@ -1868,5 +1900,3 @@ def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
         'reset': '\033[0m'
     }
     print(f"{colors.get(color, '')}{text}{colors['reset']}", end=end)
-
-
