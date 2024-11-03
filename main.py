@@ -14,6 +14,16 @@ import nltk
 import networkx as nx
 from tabulate import tabulate
 
+# Define available commands
+COMMANDS = {
+    'help': 'Show available commands',
+    'graph': 'Display knowledge graph statistics and relationships',
+    'concepts': 'List all concepts in the knowledge graph',
+    'relations': 'Show strongest concept relationships',
+    'quit': 'Exit the program',
+    'exit': 'Exit the program'
+}
+
 def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
     """
     Print colored text to console.
@@ -27,9 +37,24 @@ def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
         'blue': '\033[94m',
         'green': '\033[92m',
         'red': '\033[91m',
+        'purple': '\033[95m',
+        'cyan': '\033[96m',
+        'yellow': '\033[93m',
         'reset': '\033[0m'
     }
     print(f"{colors.get(color, '')}{text}{colors['reset']}", end=end)
+
+def get_avatar(style: str = 'default') -> str:
+    """Get the system avatar in different styles."""
+    avatars = {
+        'default': '{ [ ( * ) ] }',
+        'thinking': '{ [ (…) ] }',
+        'processing': '{ [ (⟳) ] }',
+        'success': '{ [ (✓) ] }',
+        'error': '{ [ (!) ] }',
+        'waiting': '{ [ (?) ] }'
+    }
+    return avatars.get(style, avatars['default'])
 
 # Define base knowledge directory
 KNOWLEDGE_BASE_DIR = Path(__file__).parent / "knowledge_base"
@@ -126,96 +151,59 @@ def initialize_system():
 def print_graph_stats(processor: CascadeSemanticLayerProcessor) -> None:
     """Print current knowledge graph statistics."""
     try:
-        # Initialize default values
-        stats = {
-            'num_concepts': 0,
-            'num_relationships': 0,
-            'average_clustering': 0.0,
-            'central_concepts': {},
-            'communities': []
-        }
-        
-        # Get graph references
-        concept_graph = processor.concept_graph
-        knowledge_graph = processor.knowledge_graph
-        
-        if len(concept_graph.nodes()) == 0 and len(knowledge_graph.nodes()) == 0:
-            print_colored("\nNo concepts in knowledge graph yet. Try processing some queries first!", 'blue')
-            return
-            
-        # Calculate basic statistics
-        stats['num_concepts'] = len(knowledge_graph.nodes())
-        stats['num_relationships'] = len(knowledge_graph.edges())
-        
-        # Calculate clustering coefficient (handle empty graph case)
-        if stats['num_concepts'] > 1:
-            stats['average_clustering'] = nx.average_clustering(
-                knowledge_graph, 
-                weight='weight'
-            )
-            
-        # Calculate centrality measures
-        if stats['num_concepts'] > 0:
-            stats['central_concepts'] = nx.pagerank(
-                knowledge_graph, 
-                weight='weight'
-            )
-            
-        # Find communities using connected components
-        communities = list(nx.connected_components(knowledge_graph.to_undirected()))
-        stats['communities'] = sorted(communities, key=len, reverse=True)
-        
-        # Print statistics
-        print_colored("\nKnowledge Graph Statistics:", 'blue')
-        print_colored(f"Total Concepts: {stats['num_concepts']}", 'green')
-        print_colored(f"Total Relationships: {stats['num_relationships']}", 'green')
-        print_colored(
-            f"Average Clustering: {stats['average_clustering']:.3f}", 
-            'green'
-        )
-        
-        # Print top concepts by centrality
-        if stats['central_concepts']:
-            print_colored("\nMost Central Concepts:", 'blue')
-            central_concepts = sorted(
-                stats['central_concepts'].items(), 
-                key=lambda x: x[1], 
-                reverse=True
-            )[:5]
-            
-            table_data = [[i+1, concept, f"{score:.3f}"] 
-                         for i, (concept, score) in enumerate(central_concepts)]
-            print(tabulate(
-                table_data,
-                headers=['Rank', 'Concept', 'Centrality Score'],
-                tablefmt='simple'
-            ))
-        
-        # Print communities
-        if stats['communities']:
-            print_colored(
-                f"\nNumber of Communities: {len(stats['communities'])}", 
-                'blue'
-            )
-            for i, community in enumerate(stats['communities'][:3], 1):
-                concepts = list(community)[:5]  # Show first 5 concepts
-                print_colored(
-                    f"Community {i}: {', '.join(concepts)}", 
-                    'green'
-                )
-                
+        processor.knowledge.print_graph_summary()
     except Exception as e:
         print_colored(f"Error analyzing graph: {str(e)}", 'red')
 
+def print_welcome_message():
+    """Print welcome message with ASCII art and helpful information."""
+    art = f"""
+    ╔══════════════════════════════════════════════════════════════╗
+    ║                                                              ║
+    ║               Cascade Semantic Integration Layer             ║
+    ║                     {get_avatar()}                           ║
+    ║                                                              ║
+    ║     Input ──╮                                    ╭── Output  ║
+    ║             │   ╭─{{ Semantic Analysis }}─╮      │           ║
+    ║             ├──>│  [ Context Mapping ]    │─────>│           ║
+    ║             │   │   ( Integration )       │      │           ║
+    ║             │   │      * Fusion *         │      │           ║
+    ║             │   ╰─────────────────────────╯      │           ║
+    ║             ╰────────────────────────────────────╯           ║
+    ║                                                              ║
+    ╚══════════════════════════════════════════════════════════════╝
+    """
+    
+    tips = f"""
+    {get_avatar('waiting')} Quick Start Guide:
+    ├─ Type any question or statement to begin
+    ├─ Use 'help' to see all available commands
+    ├─ Use 'graph' to visualize the knowledge network
+    ├─ Use 'concepts' to see extracted concepts
+    └─ Use 'relations' to explore concept relationships
+    
+    {get_avatar('thinking')} The system will:
+    ├─ Extract key concepts from your input
+    ├─ Analyze semantic relationships
+    ├─ Build a dynamic knowledge graph
+    └─ Generate contextually aware responses
+    """
+    
+    print_colored(art, 'cyan')
+    print_colored(f"\n{get_avatar()} Welcome to CaSIL!\n", 'green')
+    print_colored(tips, 'blue')
+    print_colored(f"\n{get_avatar('waiting')} Ready for your input...\n", 'green')
+
 def main():
-    print_colored("Initializing system...", 'blue')
+    # Add welcome message at the start
+    print_welcome_message()
     
     if not initialize_system():
         print_colored("Failed to initialize system. Please check NLTK installation.", 'red')
         return
     
     try:
-        # Initialize SemanticCascadeProcessor with configuration
+        # Initialize configuration and processor
         llm_config = LLMConfig(
             url=os.getenv('LLM_URL', 'http://0.0.0.0:11434/v1/chat/completions'),
             model=os.getenv('LLM_MODEL', 'hf.co/arcee-ai/SuperNova-Medius-GGUF:f16'),
@@ -238,155 +226,105 @@ def main():
             max_results=10,
             llm_config=llm_config,
             debug_mode='--debug' in sys.argv,
+            use_external_knowledge=False
         )
         
+        # Initialize processor with configuration
         processor = CascadeSemanticLayerProcessor(config)
         
-        # Initialize knowledge graphs
-        processor.concept_graph = nx.Graph()
-        processor.knowledge_graph = nx.DiGraph()
-        
+        # Initialize knowledge base
         processor.knowledge_base = initialize_knowledge_base(
             use_external_knowledge=config.use_external_knowledge
         )
-        
-        print_colored("\nWelcome to the Cascade of Semantically Integrated Layers\n", 'green')
-        print_colored("Input → { [ ( * ) ] } → Output", 'purple')
-        print_colored("Type 'quit' or 'exit' to end the conversation.", 'blue')
-        print_colored("Type 'help' for available commands.\n", 'blue')
-        
-        # Add new commands to the help message
-        COMMANDS = {
-            'help': 'Show this help message',
-            'quit/exit': 'End the conversation',
-            'graph': 'Show current knowledge graph statistics',
-            'concepts': 'List all concepts in the knowledge graph',
-            'relations': 'Show strongest concept relationships',
-            'analyze': 'Analyze last query\'s concept integration'
-        }
 
+        # Command handlers
+        def handle_concepts_command():
+            concepts = list(processor.knowledge.knowledge_graph.nodes())
+            if not concepts:
+                print_colored("\nNo concepts in knowledge graph yet.", 'blue')
+                return
+                
+            print_colored("\nCurrent Concepts:", 'blue')
+            for i, concept in enumerate(concepts, 1):
+                freq = processor.knowledge.knowledge_graph.nodes[concept].get('frequency', 0)
+                print_colored(f"{i}. {concept} (freq: {freq})", 'green')
+            print()
+
+        def handle_relations_command():
+            edges = list(processor.knowledge.knowledge_graph.edges(data=True))
+            if not edges:
+                print_colored("\nNo relationships in knowledge graph yet.", 'blue')
+                return
+                
+            sorted_edges = sorted(
+                edges, 
+                key=lambda x: x[2].get('weight', 0), 
+                reverse=True
+            )[:10]
+            
+            print_colored("\nStrongest Concept Relationships:", 'blue')
+            table_data = [
+                [i+1, f"{c1} → {c2}", f"{data.get('weight', 0):.3f}"]
+                for i, (c1, c2, data) in enumerate(sorted_edges)
+            ]
+            print(tabulate(
+                table_data,
+                headers=['Rank', 'Relationship', 'Weight'],
+                tablefmt='simple'
+            ))
+            print()
+
+        # Main interaction loop
         while True:
             try:
-                print_colored("You: ", 'green', end='')
+                print_colored(f"{get_avatar('waiting')} You: ", 'green', end='')
                 user_input = input().strip()
                 
                 if user_input.lower() in ['quit', 'exit']:
-                    print_colored("Goodbye!", 'green')
+                    print_colored(f"\n{get_avatar('success')} Goodbye!", 'green')
                     break
                     
                 if user_input.lower() == 'help':
-                    print_colored("\nAvailable commands:", 'blue')
+                    print_colored(f"\n{get_avatar('thinking')} Available commands:", 'blue')
                     for cmd, desc in COMMANDS.items():
                         print_colored(f"- {cmd}: {desc}", 'blue')
                     print()
                     continue
                     
-                # Add new command handlers
                 if user_input.lower() == 'graph':
                     print_graph_stats(processor)
                     continue
                     
                 if user_input.lower() == 'concepts':
-                    concepts = list(processor.knowledge_graph.nodes())
-                    if not concepts:
-                        print_colored(
-                            "\nNo concepts in knowledge graph yet. Try processing some queries first!", 
-                            'blue'
-                        )
-                        continue
-                        
-                    print_colored("\nCurrent Concepts:", 'blue')
-                    for i, concept in enumerate(concepts, 1):
-                        freq = processor.knowledge_graph.nodes[concept].get(
-                            'frequency', 
-                            0
-                        )
-                        print_colored(f"{i}. {concept} (freq: {freq})", 'green')
-                    print()
+                    handle_concepts_command()
                     continue
                     
                 if user_input.lower() == 'relations':
-                    edges = list(processor.knowledge_graph.edges(data=True))
-                    if not edges:
-                        print_colored(
-                            "\nNo relationships in knowledge graph yet. Try processing some queries first!", 
-                            'blue'
-                        )
-                        continue
-                        
-                    sorted_edges = sorted(
-                        edges, 
-                        key=lambda x: x[2].get('weight', 0), 
-                        reverse=True
-                    )[:10]
-                    
-                    print_colored("\nStrongest Concept Relationships:", 'blue')
-                    table_data = [
-                        [i+1, f"{c1} → {c2}", f"{data.get('weight', 0):.3f}"]
-                        for i, (c1, c2, data) in enumerate(sorted_edges)
-                    ]
-                    print(tabulate(
-                        table_data,
-                        headers=['Rank', 'Relationship', 'Weight'],
-                        tablefmt='simple'
-                    ))
-                    print()
-                    continue
-                    
-                if user_input.lower() == 'analyze':
-                    if processor.last_query:
-                        concepts = processor._extract_key_concepts(processor.last_query)
-                        subgraph = processor._extract_subgraph(concepts)
-                        
-                        print_colored("\nConcept Integration Analysis:", 'blue')
-                        print_colored(f"Query Concepts: {', '.join(concepts)}", 'green')
-                        print_colored(f"Related Concepts: {len(subgraph.nodes())}", 'green')
-                        print_colored(f"Relationships: {len(subgraph.edges())}", 'green')
-                        
-                        # Show concept neighborhood
-                        for concept in concepts:
-                            if concept in subgraph:
-                                neighbors = list(subgraph.neighbors(concept))
-                                print_colored(f"\n{concept} connects to:", 'blue')
-                                for neighbor in neighbors[:5]:
-                                    weight = subgraph[concept][neighbor].get('weight', 0)
-                                    print_colored(f"  - {neighbor} ({weight:.3f})", 'green')
-                    else:
-                        print_colored("No previous query to analyze.", 'red')
+                    handle_relations_command()
                     continue
 
-                if not user_input:
-                    continue
+                # Process query and handle response
+                if user_input:
+                    print_colored(f"\n{get_avatar('processing')} Processing...", 'blue')
+                    results = processor.process_semantic_cascade(user_input)
                     
-                print_colored("\nProcessing...", 'blue')
-                
-                # Process the query using semantic cascade
-                results = processor.process_semantic_cascade(user_input)
-                
-                print_colored("\nAssistant:", 'green')
-                print_colored(results['final_response'], 'blue')
-                
-                if '--debug' in sys.argv:
-                    print_colored("\nThought Process:", 'blue')
-                    print_colored("1. Initial Understanding:", 'blue')
-                    print_colored(results['initial_understanding'], 'green')
-                    print_colored("\n2. Relationship Analysis:", 'blue')
-                    print_colored(results['relationships'], 'green')
-                    print_colored("\n3. Context Integration:", 'blue')
-                    print_colored(results['context_integration'], 'green')
+                    if isinstance(results, dict) and 'final_response' in results:
+                        print_colored(f"\n{get_avatar()} Assistant:", 'green')
+                        print_colored(results['final_response'], 'blue')
+                    else:
+                        print_colored(f"\n{get_avatar('error')} Error: Invalid response format", 'red')
                 
                 print()  # Empty line for readability
                 
             except KeyboardInterrupt:
-                print_colored("\nGoodbye!", 'green')
+                print_colored(f"\n{get_avatar('success')} Goodbye!", 'green')
                 break
             except Exception as e:
-                print_colored(f"\nError processing query: {str(e)}", 'red')
-                if '--debug' in sys.argv:
+                print_colored(f"\n{get_avatar('error')} Error: {str(e)}", 'red')
+                if config.debug_mode:
                     import traceback
                     print_colored(traceback.format_exc(), 'red')
-                print_colored("Please try again.\n", 'red')
-    
+                    
     except Exception as e:
         print_colored(f"Error initializing system: {str(e)}", 'red')
         sys.exit(1)
