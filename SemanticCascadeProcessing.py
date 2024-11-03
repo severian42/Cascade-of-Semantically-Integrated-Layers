@@ -266,25 +266,33 @@ class KnowledgeGraphContext:
     concept_metadata: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     entity_relationships: Dict[str, Set[str]] = field(default_factory=dict)
     
-    def add_concept(
-        self, 
-        concept: str, 
-        metadata: Dict[str, Any]
-    ) -> None:
-        """Add or update concept in knowledge graph"""
-        if concept not in self.knowledge_graph:
-            self.knowledge_graph.add_node(
-                concept, 
-                first_seen=datetime.now().isoformat(),
-                frequency=1,
-                **metadata
+    def add_concept(self, concept: str, metadata: Dict[str, Any]) -> None:
+        """Add or update concept in knowledge graph with proper metadata handling"""
+        try:
+            # Get existing node data if it exists
+            existing_data = (
+                self.knowledge_graph.nodes[concept] 
+                if concept in self.knowledge_graph 
+                else {}
             )
-        else:
-            # Update existing concept
-            self.knowledge_graph.nodes[concept]['frequency'] += 1
-            self.knowledge_graph.nodes[concept].update(metadata)
             
-        self.concept_metadata[concept] = metadata
+            # Merge existing data with new metadata
+            node_data = {
+                **existing_data,
+                'first_seen': existing_data.get(
+                    'first_seen', 
+                    datetime.now().isoformat()
+                ),
+                'frequency': existing_data.get('frequency', 0) + 1,
+                **metadata
+            }
+            
+            # Add or update node with merged data
+            self.knowledge_graph.add_node(concept, **node_data)
+            self.concept_metadata[concept] = metadata
+            
+        except Exception as e:
+            raise RuntimeError(f"Failed to add concept {concept}: {str(e)}")
 
 class CascadeSemanticLayerProcessor:
     """
@@ -456,6 +464,9 @@ class CascadeSemanticLayerProcessor:
         self.session = SessionContext()
         self.knowledge = KnowledgeGraphContext()
         
+        # Add tracking for processed queries
+        self.processed_queries = 0
+
     @property
     def thread_pool(self):
         """Lazy initialization of thread pool."""
@@ -720,6 +731,15 @@ class CascadeSemanticLayerProcessor:
                 relevant_docs = self.knowledge_base.get_relevant_documents()
                 self.corpus_texts.extend([doc for doc in relevant_docs 
                                         if doc not in self.corpus_texts])
+            
+            # Extract and process concepts
+            concepts = self._extract_key_concepts(user_input)
+            
+            # Update graphs with new concepts
+            self._update_graphs(concepts, user_input)
+            
+            # Increment processed queries counter
+            self.processed_queries += 1
             
             # Process each layer
             results['initial_understanding'] = self._process_layer(
@@ -1410,23 +1430,21 @@ class CascadeSemanticLayerProcessor:
         previous_output: str,
         layer_instruction: str
     ) -> str:
-        """
-        Enhanced layer processing with debug output.
-        """
+        """Process layer with improved error handling and type safety"""
         try:
             if self.config.debug_mode:
                 print(f"\n🔄 Processing Layer: {layer_name}")
                 print("  ├─ Extracting concepts...")
-                
+            
             # Extract concepts for this layer
             concepts = self._extract_key_concepts(user_input)
             
             if self.config.debug_mode:
                 print("  ├─ Concepts extracted:")
-                for concept in concepts[:5]:  # Show top 5 concepts
+                for concept in concepts[:5]:
                     print(f"    • {concept}")
                 print("  ├─ Calculating novelty...")
-                
+            
             # Track previously seen concepts
             previous_concepts = set(self._extract_key_concepts(previous_output))
             novelty_score = self._calculate_concept_novelty(
@@ -1437,65 +1455,9 @@ class CascadeSemanticLayerProcessor:
             if self.config.debug_mode:
                 print(f"  ├─ Novelty score: {novelty_score:.2f}")
                 print("  ├─ Integrating knowledge...")
-                
-            # Get layer-specific configuration
-            layer_configs = {
-                "initial_understanding": {
-                    "instructions": [
-                        "Identify and extract key concepts, entities, and relationships.",
-                        "Break down complex queries into fundamental components.",
-                        "Highlight any ambiguities or unclear aspects that need clarification.",
-                    ],
-                    "processing_style": {
-                        "response_format": "structured",
-                        "detail_level": "high",
-                        "focus": "analytical",
-                        "creativity": 0.3
-                    }
-                },
-                "relationship_analysis": {
-                    "instructions": [
-                        "Analyze connections between previously identified concepts.",
-                        "Discover hidden or implicit relationships in the context.",
-                        "Map concept hierarchies and dependencies.",
-                    ],
-                    "processing_style": {
-                        "response_format": "analytical",
-                        "detail_level": "medium",
-                        "focus": "relationships",
-                        "creativity": 0.5
-                    }
-                },
-                "contextual_integration": {
-                    "instructions": [
-                        "Integrate findings with broader domain knowledge.",
-                        "Consider real-world implications and applications.",
-                        "Identify relevant examples and analogies.",
-                    ],
-                    "processing_style": {
-                        "response_format": "exploratory",
-                        "detail_level": "high",
-                        "focus": "contextual",
-                        "creativity": 0.7
-                    }
-                },
-                "synthesis": {
-                    "instructions": [
-                        "Synthesize all previous analyses into a coherent response.",
-                        "Ensure practical applicability of the final answer.",
-                        "Balance technical accuracy with understandability.",
-                    ],
-                    "processing_style": {
-                        "response_format": "cohesive",
-                        "detail_level": "balanced",
-                        "focus": "practical",
-                        "creativity": 0.4
-                    }
-                }
-            }
             
-            # Get layer config or use defaults
-            layer_config = layer_configs.get(layer_name, {
+            # Get layer-specific configuration with safe defaults
+            layer_config = {
                 "instructions": [layer_instruction],
                 "processing_style": {
                     "response_format": "standard",
@@ -1503,35 +1465,26 @@ class CascadeSemanticLayerProcessor:
                     "focus": "general",
                     "creativity": 0.5
                 }
-            })
-            
-            # Calculate weights based on processing style
-            weights = {
-                "concept_weight": 0.8 if layer_config["processing_style"]["detail_level"] == "high" else 0.6,
-                "practical_weight": 0.8 if layer_config["processing_style"]["focus"] == "practical" else 0.6
             }
             
-            # Get both session and knowledge graph insights
-            session_concepts = self._extract_key_concepts(user_input)
-            session_subgraph = self._extract_session_subgraph(
-                session_concepts, 
-                depth=2
-            )
+            # Calculate weights with safe defaults
+            weights = {
+                "concept_weight": 0.6,
+                "practical_weight": 0.4
+            }
             
-            # Combine session and knowledge insights
+            # Get context insights safely
             context_insights = self._combine_context_insights(
-                session_subgraph=session_subgraph,
-                knowledge_subgraph=self._extract_knowledge_subgraph(
-                    session_concepts
-                )
+                self._extract_session_subgraph(concepts),
+                self._extract_knowledge_subgraph(concepts)
             )
             
-            # Update prompt generation to use combined context
+            # Generate prompt with improved error handling
             prompt = self._generate_enhanced_layer_prompt(
                 layer_name=layer_name,
                 user_input=user_input,
                 previous_output=previous_output,
-                instructions=layer_config["instructions"],
+                instructions=[layer_instruction],
                 weights=weights,
                 novelty_score=novelty_score,
                 context_insights=context_insights,
@@ -1540,7 +1493,7 @@ class CascadeSemanticLayerProcessor:
             
             if self.config.debug_mode:
                 print("  ├─ Calculating temperature...")
-                
+            
             # Calculate dynamic temperature
             temperature = self._calculate_dynamic_temperature(
                 novelty_score,
@@ -1550,7 +1503,7 @@ class CascadeSemanticLayerProcessor:
             if self.config.debug_mode:
                 print(f"  └─ Temperature: {temperature:.2f}")
                 print("\n🤖 Calling LLM...")
-                
+            
             # Process through LLM with style-specific parameters
             return self._call_llm_with_style(
                 prompt,
@@ -1575,76 +1528,68 @@ class CascadeSemanticLayerProcessor:
         context_insights: Dict[str, Any],
         processing_style: Dict[str, Any]
     ) -> str:
-        """
-        Generate enhanced system prompt for LLM based on layer context.
-        
-        Args:
-            layer_name: Current processing layer name
-            user_input: Original user query
-            previous_output: Output from previous layer
-            instructions: Layer-specific instructions
-            weights: Layer-specific weights
-            novelty_score: Calculated novelty score
-            context_insights: Session-specific context
-            processing_style: Processing style configuration
-            
-        Returns:
-            str: Enhanced system prompt for LLM
-        """
+        """Generate enhanced system prompt with proper type handling"""
         try:
             # Build enhanced prompt
             prompt_parts = [
                 f"You are an expert system focused on {layer_name}.",
                 "\nProcessing Guidelines:",
                 *[f"- {instr}" for instr in instructions],
-                f"\nResponse Style: {processing_style['response_format']}",
-                f"Detail Level: {processing_style['detail_level']}",
-                f"Focus Area: {processing_style['focus']}",
+                f"\nResponse Style: {processing_style.get('response_format', 'standard')}",
+                f"Detail Level: {processing_style.get('detail_level', 'medium')}",
+                f"Focus Area: {processing_style.get('focus', 'general')}",
                 "\nContext:",
                 f"Previous Analysis: {previous_output}",
                 f"Original Query: {user_input}",
-                f"Concept Weight: {weights['concept_weight']:.2f}",
-                f"Practical Weight: {weights['practical_weight']:.2f}",
+                f"Concept Weight: {weights.get('concept_weight', 0.5):.2f}",
+                f"Practical Weight: {weights.get('practical_weight', 0.5):.2f}",
                 f"Novelty Score: {novelty_score:.2f}"
             ]
             
-            # Add session context if available
-            if context_insights['recent_concepts']:
-                prompt_parts.extend([
-                    "\nRelevant Concepts:",
-                    *[f"- {c}" for c in context_insights['recent_concepts'][:3]]
-                ])
+            # Safely handle context insights
+            if isinstance(context_insights, dict):
+                if context_insights.get('recent_concepts'):
+                    prompt_parts.extend([
+                        "\nRelevant Concepts:",
+                        *[f"- {c}" for c in context_insights['recent_concepts'][:3]]
+                    ])
                 
-            if context_insights['session_relationships']:
-                prompt_parts.extend([
-                    "\nRelevant Relationships:",
-                    *[f"- {u} → {v} ({d['weight']:.2f})" for u, v, d in context_insights['session_relationships'][:3]]
-                ])
+                if context_insights.get('session_relationships'):
+                    prompt_parts.extend([
+                        "\nRelevant Relationships:",
+                        *[f"- {r[0]} → {r[1]} ({r[2]:.2f})" 
+                          for r in context_insights['session_relationships'][:3]]
+                    ])
                 
-            if context_insights['persistent_concepts']:
-                prompt_parts.extend([
-                    "\nPersistent Concepts:",
-                    *[f"- {c} ({d['weight']:.2f})" for c, d in context_insights['persistent_concepts'][:3]]
-                ])
+                if context_insights.get('persistent_concepts'):
+                    prompt_parts.extend([
+                        "\nPersistent Concepts:",
+                        *[f"- {c}" for c in context_insights['persistent_concepts'][:3]]
+                    ])
                 
-            if context_insights['knowledge_relationships']:
-                prompt_parts.extend([
-                    "\nPersistent Relationships:",
-                    *[f"- {u} → {v} ({d['weight']:.2f})" for u, v, d in context_insights['knowledge_relationships'][:3]]
-                ])
+                if context_insights.get('knowledge_relationships'):
+                    prompt_parts.extend([
+                        "\nPersistent Relationships:",
+                        *[f"- {r[0]} → {r[1]} ({r[2]:.2f})" 
+                          for r in context_insights['knowledge_relationships'][:3]]
+                    ])
                 
-            if context_insights['conversation_context']:
-                prompt_parts.extend([
-                    "\nConversation Context:",
-                    *[f"- {c}" for c in context_insights['conversation_context'][:2]]
-                ])
-                
+                if context_insights.get('conversation_context'):
+                    prompt_parts.extend([
+                        "\nConversation Context:",
+                        *[f"- {c}" for c in context_insights['conversation_context'][:2]]
+                    ])
+            
             return "\n".join(prompt_parts)
             
         except Exception as e:
             if self.config.debug_mode:
                 print(f"Error generating layer prompt: {str(e)}")
-            return f"Error in prompt generation: {str(e)}"
+            # Provide fallback prompt on error
+            return (
+                f"You are an expert system focused on {layer_name}. "
+                f"Analyze the following input: {user_input}"
+            )
 
     def _call_llm_with_style(
         self,
@@ -1992,23 +1937,36 @@ class CascadeSemanticLayerProcessor:
         }
 
     def analyze_knowledge_graph(self) -> Dict[str, Any]:
-        """
-        Analyze the current state of the knowledge graph.
-        
-        Returns:
-            Dict containing various graph metrics and insights
-        """
-        return {
-            'num_concepts': self.knowledge_graph.number_of_nodes(),
-            'num_relationships': self.knowledge_graph.number_of_edges(),
-            'central_concepts': nx.pagerank(self.knowledge_graph),
-            'communities': list(nx.community.greedy_modularity_communities(
-                self.knowledge_graph.to_undirected()
-            )),
-            'average_clustering': nx.average_clustering(
-                self.knowledge_graph.to_undirected()
-            )
-        }
+        """Analyze the current state of the knowledge graph."""
+        if self.processed_queries == 0:
+            return {
+                'status': 'empty',
+                'message': 'No concepts in knowledge graph yet. Try processing some queries first!'
+            }
+            
+        try:
+            graph = self.knowledge.knowledge_graph
+            return {
+                'status': 'success',
+                'num_concepts': graph.number_of_nodes(),
+                'num_relationships': graph.number_of_edges(),
+                'central_concepts': list(nx.pagerank(graph).items()),
+                'recent_concepts': sorted(
+                    graph.nodes(),
+                    key=lambda x: graph.nodes[x].get('last_seen', ''),
+                    reverse=True
+                )[:5],
+                'most_frequent': sorted(
+                    graph.nodes(),
+                    key=lambda x: graph.nodes[x].get('frequency', 0),
+                    reverse=True
+                )[:5]
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Error analyzing graph: {str(e)}'
+            }
 
     def _analyze_subgraph(self, subgraph: nx.DiGraph) -> Dict[str, Any]:
         """Analyze subgraph for relevant insights."""
@@ -2026,6 +1984,51 @@ class CascadeSemanticLayerProcessor:
                 if d['weight'] > self.config.similarity_threshold
             ]
         }
+
+    def _update_graphs(self, concepts: List[str], context: str) -> None:
+        """Update both session and knowledge graphs with new concepts."""
+        try:
+            current_time = datetime.now().isoformat()
+            
+            # Calculate relationships between concepts
+            relationships = []
+            for i, c1 in enumerate(concepts):
+                for c2 in concepts[i+1:]:
+                    similarity = self._calculate_semantic_similarity(c1, c2)
+                    if similarity > self.config.similarity_threshold:
+                        relationships.append((c1, c2, similarity))
+            
+            # Update session graph
+            self._update_session_context(concepts, relationships)
+            
+            # Update knowledge graph
+            for concept in concepts:
+                self.knowledge.add_concept(concept, {
+                    'last_seen': current_time,
+                    'context': context[:100],  # Store truncated context
+                    'frequency': self.knowledge.concept_metadata.get(
+                        concept, {}
+                    ).get('frequency', 0) + 1
+                })
+            
+            # Add relationships to knowledge graph
+            for c1, c2, weight in relationships:
+                if not self.knowledge.knowledge_graph.has_edge(c1, c2):
+                    self.knowledge.knowledge_graph.add_edge(
+                        c1, c2,
+                        weight=weight,
+                        first_seen=current_time
+                    )
+                else:
+                    # Update existing relationship
+                    prev_weight = self.knowledge.knowledge_graph[c1][c2]['weight']
+                    self.knowledge.knowledge_graph[c1][c2]['weight'] = (
+                        prev_weight + weight
+                    ) / 2
+                    
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error updating graphs: {str(e)}")
 
 def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
     """
