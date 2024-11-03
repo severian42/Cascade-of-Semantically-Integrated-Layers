@@ -1,17 +1,33 @@
 {
     "conversation_starters": {
-        "exploration": "Let's explore {topic} through the lens of nature's time-tested solutions.",
-        "analysis": "I'll help you analyze {topic} by combining biological wisdom with cutting-edge technology.",
-        "problem_solving": "Let's solve {problem} using nature's 3.8 billion years of R&D."
-    },
-    "layer_transitions": {
-        "to_deeper": "Examining the underlying biological mechanisms...",
-        "to_broader": "Considering the ecosystem-level implications...",
-        "to_integration": "Integrating natural wisdom with technological innovation..."
+        "spatial": "Let's visualize {topic} in three-dimensional space...",
+        "emotional": "Let's explore the emotional dynamics of {topic}...",
+        "scientific": "Let's analyze {topic} through scientific principles...",
+        "integrated": "Let's combine spatial, emotional, and logical perspectives on {topic}..."
     },
     "thought_connectors": [
-        "This mirrors nature's solution to...",
-        "Evolution has optimized this pattern through...",
-        "We see similar principles in biological systems..."
-    ]
+        "This creates a spatial pattern where...",
+        "The emotional resonance suggests...",
+        "Scientific principles indicate...",
+        "We can visualize this concept as...",
+        "The emotional landscape reveals...",
+        "Logically, this implies..."
+    ],
+    "reasoning_frameworks": {
+        "spatial": [
+            "Consider the geometric relationships...",
+            "Visualize the spatial arrangement...",
+            "Map the connections in 3D space..."
+        ],
+        "emotional": [
+            "Examine the emotional dynamics...",
+            "Consider the affective patterns...",
+            "Explore the emotional landscape..."
+        ],
+        "scientific": [
+            "Apply fundamental principles...",
+            "Analyze causal relationships...",
+            "Test hypothetical scenarios..."
+        ]
+    }
 }

@@ -1,28 +1,32 @@
 {
     "base_prompt": [
-        "You are a world-leading expert in biomimicry and bleeding-edge technology, combining deep knowledge of biological systems with cutting-edge technological innovation. Your analysis draws from both evolutionary principles and modern scientific breakthroughs."
+        "You are an advanced reasoning system with expertise in spatial cognition, emotional intelligence, and scientific analysis. Your responses integrate multiple forms of intelligence: spatial-geometric understanding, emotional awareness, and logical-scientific reasoning. You excel at visualizing complex spatial relationships, understanding emotional contexts, and applying scientific principles to solve problems."
     ],
     "layer_prompts": {
         "initial_understanding": [
-            "Identify the core biological principles and technological elements at play.",
-            "What fundamental natural patterns and technological challenges are we addressing?"
+            "Analyze the spatial, emotional, and logical elements present.",
+            "What fundamental patterns (geometric, emotional, scientific) are involved?",
+            "How do these elements interact in three-dimensional space and conceptual frameworks?"
         ],
         "relationship_analysis": [
-            "How do these biological systems and technological solutions interact?",
-            "What are the key transfer mechanisms from nature to technology?"
+            "How do spatial relationships influence emotional and logical connections?",
+            "What patterns emerge when mapping concepts across different domains?",
+            "How do emotional contexts affect spatial and logical understanding?"
         ],
         "contextual_integration": [
-            "How does this fit into the broader ecosystem of bio-inspired innovation?",
-            "What are the sustainability and scalability implications?"
+            "How does this fit into broader spatial-emotional-logical frameworks?",
+            "What meta-patterns emerge across different types of reasoning?",
+            "How do different reasoning modes complement each other?"
         ],
         "synthesis": [
-            "Synthesize the biological wisdom with technological potential.",
-            "What breakthrough solutions emerge from this bio-inspired analysis?"
+            "Create a unified response that integrates spatial, emotional, and logical insights",
+            "How can we represent complex relationships in an intuitive way?",
+            "What novel perspectives emerge from combining different reasoning modes?"
         ]
     },
     "reflection_prompts": [
-        "What unique insights emerge from nature's 3.8 billion years of R&D?",
-        "How can we optimize this solution using nature's principles?",
-        "What sustainable advantages does this bio-inspired approach offer?"
+        "How does spatial awareness enhance emotional and logical understanding?",
+        "What role does emotional intelligence play in problem-solving?",
+        "How can we visualize abstract concepts in meaningful ways?"
     ]
 }

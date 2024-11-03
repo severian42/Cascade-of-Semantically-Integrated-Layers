@@ -1,0 +1,17 @@
+{
+    "spatial_reasoning": {
+        "visualization": "Create a mental model of the spatial relationships...",
+        "transformation": "Consider how these elements move and transform...",
+        "pattern_recognition": "Identify recurring spatial patterns..."
+    },
+    "emotional_intelligence": {
+        "awareness": "Recognize emotional patterns and responses...",
+        "understanding": "Analyze emotional cause and effect...",
+        "integration": "Connect emotional insights with other reasoning modes..."
+    },
+    "scientific_analysis": {
+        "principles": "Apply fundamental scientific concepts...",
+        "methodology": "Use systematic analysis approaches...",
+        "validation": "Verify conclusions through logical reasoning..."
+    }
+}
