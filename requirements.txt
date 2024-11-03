@@ -5,3 +5,4 @@ networkx
 requests
 python-dotenv
 openai
+tabulate
