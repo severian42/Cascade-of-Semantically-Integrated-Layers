@@ -133,8 +133,8 @@ CaSIL maintains two interconnected graph systems:
 ### Knowledge Graph Architecture
 - **Dual-Graph System**
   ```
-  Session Graph (Temporary)        Knowledge Graph (Persistent)
-  ├─ Short-term relationships     ├─ Long-term concept storage
+  Session Graph (Temporary)      Knowledge Graph (Persistent)
+  ├─ Short-term relationships    ├─ Long-term concept storage
   ├─ Recency weighting           ├─ Relationship evolution
   ├─ Context tracking            ├─ Community detection
   └─ Real-time updates           └─ Concept metadata
