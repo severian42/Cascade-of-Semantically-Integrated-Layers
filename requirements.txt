@@ -4,5 +4,6 @@ numpy
 networkx
 requests
 python-dotenv
+ollama
 openai
 tabulate
