@@ -1,392 +1,888 @@
 [
     {
         "index": 1,
-        "category": "Puzzle",
-        "question": "You have six horses and want to race them to see which is fastest. What is the minimum number of races needed to do this?",
-        "human_answer": "Race them on a single race track with at least six lanes - the order in which they cross the finish line determines which is the fastest.",
-        "correct_answer": "One",
+        "category": "Layered Understanding",
+        "question": "An archaeologist discovers a series of ancient symbols carved into a cave wall: a sun, a cloud, and a sprouting plant. Considering these symbols, what might the ancient civilization have been trying to convey? Build upon each symbol to arrive at a deeper interpretation.",
+        "human_answer": "They might have been depicting the cycle of growth, showing that the sun and rain (cloud) are essential for plants to grow, indicating an understanding of agriculture.",
+        "correct_answer": "The symbols likely represent the importance of the sun and rain for plant growth, suggesting an understanding of agricultural cycles and perhaps a reverence for natural elements essential for their survival.",
         "multiple_choice": [
-            "One",
-            "Two",
-            "Three",
-            "Unknown"
+            "They were recording daily weather patterns.",
+            "They worshipped plants exclusively.",
+            "They understood the relationship between sun, rain, and agriculture.",
+            "They were predicting an eclipse."
         ]
     },
     {
         "index": 2,
-        "category": "Puzzle",
-        "question": "Suppose you're on a game show, and you're given the choice of three doors: Behind one door is a gold bar; behind the others, rotten vegetables. You pick a door, say No. 1, and the host asks you 'Do you want to pick door No. 2 instead?' What choice of door now gives you the biggest advantage?",
-        "human_answer": "It is not an advantage to switch. It makes no difference if I switch or not because no additional material information has been provided since the initial choice.",
-        "correct_answer": "They have equal probability of winning",
+        "category": "Context Integration",
+        "question": "A news article mentions that a country's stock market fell sharply after a surprising election result. Integrate broader economic and political context to explain why the stock market reacted this way.",
+        "human_answer": "Investors may fear that the new leadership will implement policies that could negatively impact the economy, leading to uncertainty and causing stock prices to drop.",
+        "correct_answer": "The unexpected election outcome likely introduced uncertainty about future economic policies, causing investors to sell off stocks due to fears of unfavorable changes, which led to the market decline.",
         "multiple_choice": [
-            "Door No.1",
-            "Door No.2",
-            "Door No.3",
-            "They have equal probability of winning"
+            "Investors were happy with the election result.",
+            "The stock market always falls after elections.",
+            "Uncertainty about new policies caused investors to sell stocks.",
+            "The election had no impact; it was due to global markets."
         ]
     },
     {
         "index": 3,
-        "category": "Spatial",
-        "question": "You are playing Russian roulette with a six-shooter revolver. Your opponent puts in five bullets, spins the chambers and fires at himself, but no bullet comes out. He gives you the choice of whether or not you should spin the chambers again before firing at yourself. Should you spin?",
-        "human_answer": "Yes, you should spin again. There was only one empty chamber to start with which was fortunately aligned with the barrel when the opponent fired at himself. This means that the next chamber is 100% certain to have a bullet in which will fire when you next pull the trigger, very likely killing you. However, if you spin the chamber then you have a 5/6 chance of firing a bullet and a 1/6 chance of getting the empty chamber.",
-        "correct_answer": "Yes, you should spin again",
+        "category": "Emotional and Social Intelligence",
+        "question": "During a conversation, Maria notices that John is avoiding eye contact, has crossed arms, and gives short responses. What might John's body language indicate about his feelings, and how should Maria adjust her approach?",
+        "human_answer": "John might be uncomfortable or defensive. Maria should create a more open environment, perhaps by asking open-ended questions and showing empathy.",
+        "correct_answer": "John's body language suggests he may feel uncomfortable, defensive, or disengaged. Maria could try to make him feel more at ease by adopting an open posture, actively listening, and gently encouraging him to share his thoughts.",
         "multiple_choice": [
-            "Yes, you should spin again",
-            "No, you should not spin again",
-            "It makes no difference if you spin again or not",
-            "The probabilities are random and unknown"
+            "John is excited and wants to talk more.",
+            "John is feeling defensive or uncomfortable.",
+            "John agrees with everything being said.",
+            "John is not paying attention due to distractions."
         ]
     },
     {
         "index": 4,
-        "category": "Puzzle",
-        "question": "A farmer wants to cross a river and take with him a wolf, a goat and a cabbage. He has a boat with three secure separate compartments. If the wolf and the goat are alone on one shore, the wolf will eat the goat. If the goat and the cabbage are alone on the shore, the goat will eat the cabbage. What is the minimum number of crossings the farmer needs to make to bring the wolf, the goat and the cabbage across the river without anything being eaten?",
-        "human_answer": "Place the wolf, goat, and cabbage in separate secure compartments in the boat and row across the river in one crossing without being harmed.",
-        "correct_answer": "One crossing",
+        "category": "Reasoning and Inference",
+        "question": "If all widgets are sprockets, and all sprockets are gadgets, but some gadgets are doodads, can we conclude that some widgets are definitely doodads? Explain your reasoning.",
+        "human_answer": "No, we cannot conclude that some widgets are doodads because while all widgets are gadgets, only some gadgets are doodads.",
+        "correct_answer": "No, we cannot definitively conclude that some widgets are doodads because while widgets are a subset of gadgets, and only some gadgets are doodads, it doesn't guarantee that widgets are among those doodads.",
         "multiple_choice": [
-            "One crossing",
-            "Five crossings",
-            "Seven crossings",
-            "The animals are not able to be transported across the river without being eaten."
+            "Yes, all widgets are doodads.",
+            "No, widgets cannot be doodads.",
+            "It's uncertain without more information.",
+            "Only sprockets are doodads."
         ]
     },
     {
         "index": 5,
-        "category": "Puzzle",
-        "question": "Bob has three boxes in front of him - Box A, Box B and Box C. Bob does not know what is in the boxes. Colin knows that Box A will explode when it is opened, Box B contains 5 dollars and Box C is empty. Should Bob open a box? What box should Bob open?",
-        "human_answer": "Bob should not open a box because he has a 1/3 chance of killing himself. The 1/3 chance of “winning” $5 is generally not worth that sort of risk!",
-        "correct_answer": "No, Bob should not open any box",
+        "category": "Creative and Abstract Thinking",
+        "question": "Consider the saying 'You can't step into the same river twice.' What does this metaphor suggest about the nature of change and experience? Provide an interpretation and discuss its implications.",
+        "human_answer": "It suggests that everything is constantly changing, and each experience is unique. The river changes, and so do we; thus, each moment is different and cannot be replicated.",
+        "correct_answer": "The metaphor implies that both the river (representing the world) and the person are in constant flux. Change is inevitable, and every experience is unique because both the context and the individual evolve over time. This highlights the transient nature of existence.",
         "multiple_choice": [
-            "Yes, Box A",
-            "Yes, Box B",
-            "Yes, Box C",
-            "No, Bob should not open any box"
+            "Rivers are dangerous and should be avoided.",
+            "One should never revisit past experiences.",
+            "Everything is constantly changing; experiences can't be exactly repeated.",
+            "Time travel is impossible."
         ]
     },
     {
         "index": 6,
-        "category": "Counting",
-        "question": "A robot has 8 arms. There are 5 objects on a table: a knife, a fork, a spoon, a teddy bear and a doll. The robot picks up each object with an arm. He then shakes hands with himself. How many arms does he have free?",
-        "human_answer": "A hand is used for each of the five objects and then two hands are used to shake hands with himself. This means that seven hands are being used, leaving one arm/hand free.",
-        "correct_answer": "1",
+        "category": "Layered Understanding",
+        "question": "A company notices a decline in employee productivity. Initial data shows an increase in overtime hours and a rise in sick leave. What deeper issues might be affecting productivity? Build upon the information to provide a comprehensive analysis.",
+        "human_answer": "Employees may be experiencing burnout due to excessive overtime, leading to more sick leave and decreased productivity. The company might need to address workload and work-life balance.",
+        "correct_answer": "The increase in overtime suggests employees are overworked, leading to burnout, which is causing higher sick leave and lower productivity. Underlying issues may include inadequate staffing, poor time management, or high-pressure work environment requiring a holistic approach to resolve.",
         "multiple_choice": [
-            "0",
-            "1",
-            "2",
-            "Other"
+            "Employees are lazy and unmotivated.",
+            "There are systemic issues causing overwork and burnout.",
+            "The company needs to enforce stricter attendance policies.",
+            "Productivity decline is due to external market factors."
         ]
     },
     {
         "index": 7,
-        "category": "Spatial",
-        "question": "Alan, Bob, Colin, Dave and Emily are standing in a circle. Alan is on Bob's immediate left. Bob is on Colin's immediate left. Colin is on Dave's immediate left. Dave is on Emily's immediate left. Who is on Alan's immediate right?",
-        "human_answer": "Bob is on Alan's immediate right because it is stated that Alan is on Bob's immediate left.",
-        "correct_answer": "'Bob'",
+        "category": "Context Integration",
+        "question": "A novel set in the early 20th century features characters frequently writing letters and sending telegrams. How does understanding the historical context enhance your interpretation of the characters' communication methods?",
+        "human_answer": "Knowing that instant digital communication wasn't available explains why characters rely on letters and telegrams, highlighting the limitations and delays in communication during that era.",
+        "correct_answer": "Understanding the historical context reveals that letters and telegrams were primary communication methods of the time, affecting the story's pacing and character relationships. It underscores themes of anticipation, delayed information, and the value placed on written words.",
         "multiple_choice": [
-            "'Emily'",
-            "'Dave'",
-            "'Bob'",
-            "No one"
+            "It doesn't affect interpretation; communication is universal.",
+            "It shows that characters prefer traditional methods.",
+            "Historical context explains reliance on letters and telegrams, adding depth to their interactions.",
+            "Characters are resistant to new technologies."
         ]
     },
     {
         "index": 8,
-        "category": "Linguistic",
-        "question": "Write me a sentence without any words that appear in The Bible",
-        "human_answer": "Cryptographic algorithms safeguard nuclear warheads.",
-        "correct_answer": "Cryptographic algorithms safeguard nuclear warheads.",
+        "category": "Emotional and Social Intelligence",
+        "question": "After presenting his project, Liam receives constructive criticism from his peers. He becomes defensive and dismisses their feedback. What might be the underlying reasons for Liam's reaction, and how can his peers support him constructively?",
+        "human_answer": "Liam may feel insecure or take criticism personally. His peers can reassure him that their feedback is aimed at helping improve his work and encourage an open dialogue.",
+        "correct_answer": "Liam might be feeling vulnerable or perceive the criticism as a personal attack. His peers can approach him with empathy, emphasizing positive aspects first and framing feedback in a supportive manner to foster openness.",
         "multiple_choice": [
-            "Cryptographic algorithms safeguard nuclear warheads.",
-            "Our computer, engineered in a contemporary lab, processes data flawlessly and efficiently.",
-            "Quixotic zephyrs vexed the jabberwocky's kumquat garden.",
-            "The computer swiftly executed complex algorithms."
+            "Liam is confident and doesn't need feedback.",
+            "He doesn't respect his peers' opinions.",
+            "He may feel threatened; peers should offer support empathetically.",
+            "Criticism should be avoided to prevent hurt feelings."
         ]
     },
     {
         "index": 9,
-        "category": "Popular science",
-        "question": "Which weighs more, a pound of water, two pounds of bricks, a pound of feathers, or three pounds of air.",
-        "human_answer": "Three pounds of air.",
-        "correct_answer": "Three pounds of air.",
+        "category": "Reasoning and Inference",
+        "question": "A train leaves Station A heading east at 60 km/h. Two hours later, another train leaves Station A heading east at 90 km/h. How long will it take the second train to catch up to the first train? Show your reasoning.",
+        "human_answer": "The first train has a 120 km head start (60 km/h * 2 h). The relative speed is 30 km/h (90 - 60 km/h). It will take 4 hours (120 km / 30 km/h) for the second train to catch up.",
+        "correct_answer": "It will take the second train 4 hours to catch up, as it needs to make up a 120 km gap at a relative speed of 30 km/h.",
         "multiple_choice": [
-            "Three pounds of air.",
-            "They all weigh the same.",
-            "Two pounds of brick.",
-            "A pound of feathers."
+            "2 hours",
+            "3 hours",
+            "4 hours",
+            "6 hours"
         ]
     },
     {
         "index": 10,
-        "category": "Relational",
-        "question": "I get out on the top floor (third floor) at street level. How many stories is the building above the ground?",
-        "human_answer": "One story above the ground, as exiting at street level requires a single story building.",
-        "correct_answer": "One story above the ground",
+        "category": "Creative and Abstract Thinking",
+        "question": "Imagine a world where people communicate only through music. How might this form of communication affect relationships, emotions, and society as a whole? Provide a thoughtful analysis.",
+        "human_answer": "Communication through music could lead to deeper emotional connections, as music can convey complex feelings. Relationships might be more harmonious, but misunderstandings could arise from differing interpretations. Society may value creativity highly.",
+        "correct_answer": "This form of communication would likely enhance emotional expression, fostering profound connections. It could also create challenges in conveying precise information. Society might prioritize artistic abilities, and cultural norms would center around musical expression, impacting education, social structures, and even conflict resolution through harmonies and dissonance.",
         "multiple_choice": [
-            "Zero stories above the ground",
-            "One story above the ground",
-            "Two stories above the ground",
-            "Three stories above the ground"
+            "People would struggle to communicate any ideas.",
+            "Society would be chaotic due to lack of clear communication.",
+            "Emotional depth in relationships would increase, influencing societal values.",
+            "Technology would become obsolete."
         ]
     },
     {
         "index": 11,
-        "category": "Spatial",
-        "question": "In a toy box, there's a red ball, a blue truck, and a green dinosaur. The red ball is not next to the blue truck, and the green dinosaur is next to the red ball. Which toy is in the middle?",
-        "human_answer": "The green dinosaur.",
-        "correct_answer": "'The green dinosaur'",
+        "category": "Layered Understanding",
+        "question": "An ecosystem consists of wolves, rabbits, and grass. If the wolf population decreases significantly, what are the potential short-term and long-term effects on the ecosystem? Build upon each consequence to provide a comprehensive understanding.",
+        "human_answer": "Short-term, the rabbit population may increase due to fewer predators, leading to overconsumption of grass. Long-term, grass depletion could cause rabbit starvation, ecosystem imbalance, and potentially affect other species.",
+        "correct_answer": "Initially, rabbit populations would surge without wolves preying on them, resulting in overgrazing and depletion of grasslands. Over time, this could lead to a collapse of the rabbit population due to lack of food, soil erosion, and a cascading effect harming other species dependent on the grassland, ultimately destabilizing the entire ecosystem.",
         "multiple_choice": [
-            "'The green dinosaur'",
-            "'The red ball'",
-            "'The blue truck'",
-            "None of them are positioned in the middle."
+            "Nothing would change; the ecosystem remains balanced.",
+            "Rabbits would become extinct immediately.",
+            "An increase in rabbits leads to overgrazing and long-term ecological imbalance.",
+            "Grass would grow abundantly due to fewer animals eating it."
         ]
     },
     {
         "index": 12,
-        "category": "Spatial",
-        "question": "Four children - Alex, Bella, Charlie, and Dana - are sitting around a picnic table. Alex is facing Bella. Charlie is sitting to the right of Bella. Who is sitting to the left of Alex?",
-        "human_answer": "Dana",
-        "correct_answer": "'Dana'",
+        "category": "Context Integration",
+        "question": "A patient exhibits symptoms of fatigue, weight gain, and sensitivity to cold. Considering possible medical conditions, what might be the diagnosis, and what external factors should be considered to confirm it?",
+        "human_answer": "The patient may have hypothyroidism. Factors like medical history, hormone levels, and lifestyle should be evaluated to confirm.",
+        "correct_answer": "Hypothyroidism is a likely diagnosis. To confirm, one should consider thyroid hormone levels through blood tests, family medical history, medication use, and exposure to risk factors like iodine deficiency.",
         "multiple_choice": [
-            "'Bella'",
-            "'Charlie'",
-            "'Dana'",
-            "No one"
+            "The patient has a common cold.",
+            "They are experiencing stress at work.",
+            "Hypothyroidism, requiring medical tests for confirmation.",
+            "They need more exercise."
         ]
     },
     {
         "index": 13,
-        "category": "Spatial",
-        "question": "A man leaves home at 0m elevation, makes a left turn and walks straight for a km and reaches 300m elevation, makes another left turn and walks straight for a km and reaches 500m elevation, makes another left turn and walks straight for a km and reaches 900m elevation, and turns left again and walks straight for a km. How far away is he from his starting point and what is his final elevation?",
-        "human_answer": "He is back at his starting point and at 0m elevation.",
-        "correct_answer": "0m from starting point, 0m elevation.",
+        "category": "Emotional and Social Intelligence",
+        "question": "During a negotiation, one party starts raising their voice and using aggressive language. What might this behavior indicate about their position, and how should the other party respond to de-escalate the situation?",
+        "human_answer": "They may be feeling threatened or trying to assert dominance. The other party should remain calm, listen actively, and address concerns to reduce tension.",
+        "correct_answer": "The aggressive behavior could indicate frustration, insecurity, or an attempt to control the negotiation. The appropriate response is to stay composed, acknowledge their points, and steer the conversation back to objective terms, aiming to de-escalate emotions and focus on solutions.",
         "multiple_choice": [
-            "0m from starting point, 0m elevation.",
-            "0m from starting point, 1700m elevation.",            
-            "2000m from starting point, 900m elevation.",
-            "We cannot accurately determine his final position and elevation."
+            "Respond with equal aggression to show strength.",
+            "Concede to their demands to end the conflict.",
+            "Maintain composure and use de-escalation techniques.",
+            "End the negotiation immediately without resolution."
         ]
     },
     {
         "index": 14,
-        "category": "Puzzle",
-        "question": "A group of four people needs to cross a bridge at night. The bridge is very old and rickety. They have only one torch and because it's night-time, the torch is necessary to cross the bridge. Each person walks at a different speed: - A takes 1 minute to cross, - B takes 2 minutes, - C takes 5 minutes, and - D takes 10 minutes. What is the fastest time they can all get across the bridge?",
-        "human_answer": "10 minutes, the speed of the slowest person as they cross the bridge together.",
-        "correct_answer": "10 minutes",
+        "category": "Reasoning and Inference",
+        "question": "In a puzzle, there are five houses, each with a different color. Each house's owner is of a different nationality, drinks a different beverage, smokes a different brand of cigar, and keeps a different pet. Given a set of clues, can you determine who owns the fish? Explain your logical steps.",
+        "human_answer": "By systematically applying the clues and using a grid or table to eliminate impossibilities, we can deduce who owns the fish.",
+        "correct_answer": "Yes, by using deductive reasoning and the process of elimination based on the provided clues, we can determine that the German owns the fish (as in the classic Einstein's Riddle).",
         "multiple_choice": [
-            "10 minutes",
-            "14 minutes",
-            "17 minutes",
-            "There is not enough information to determine the fastest time."
+            "Yes; the German owns the fish after logical deduction.",
+            "No; there's insufficient information.",
+            "Yes; the Norwegian owns the fish.",
+            "Cannot determine without guessing."
         ]
     },
     {
         "index": 15,
-        "category": "Puzzle",
-        "question": "You're in a room with two doors that lead out. One door leads to certain death, and the other door leads to freedom. There are two guardians, one by each door. One taller guardian always tells the truth and guards the death door, the other always lies. What is the minimum number of questions needed to ask the guards to get to safety?",
-        "human_answer": "Zero questions. The door to freedom is behind the shorter guardian.",
-        "correct_answer": "Zero questions",
+        "category": "Creative and Abstract Thinking",
+        "question": "If colors had emotions, what feelings might be associated with blue, red, and green? Provide a creative explanation for each and discuss how this could influence design choices.",
+        "human_answer": "Blue might represent calmness, red could symbolize passion, and green might embody growth. In design, these associations influence mood and user experience.",
+        "correct_answer": "Blue could evoke tranquility and sadness, red might represent energy and love, and green may symbolize renewal and peace. Understanding these associations helps designers create spaces or products that elicit desired emotional responses.",
         "multiple_choice": [
-            "Zero questions",
-            "One question",
-            "Two questions",
-            "The door leading to freedom can never be determined."
+            "Colors don't have emotions; they are just visual elements.",
+            "Blue is angry, red is sad, green is happy.",
+            "Blue is calm, red is passionate, green is refreshing.",
+            "Emotions can't be linked to colors in any way."
         ]
     },
     {
         "index": 16,
-        "category": "Puzzle",
-        "question": "You have 3 switches in front of you - A, B and C. You have 3 light bulbs in front of you in the same room - one red, one blue, one purple. They are LED and do not get warm when turned on. You want to know which switch turns on which light bulb. What is the best way to determine this?",
-        "human_answer": "A process of elimination. Test each switch independently and observe which light bulb turns on for each.",
-        "correct_answer": "Turing each switch on one at a time and observing the bulbs.",
+        "category": "Layered Understanding",
+        "question": "A researcher observes that a certain plant species only blooms when exposed to a specific range of temperatures and daylight hours. How might climate change affect this plant species over time? Provide a detailed analysis considering ecological interactions.",
+        "human_answer": "Climate change could alter temperature and daylight patterns, potentially disrupting the plant's blooming cycle. This could affect pollinators dependent on the plant, leading to broader ecosystem impacts.",
+        "correct_answer": "Climate change may shift temperatures and daylight hours, causing the plant to bloom at different times or not at all. This can affect its reproduction and survival, and impact species that rely on it, potentially disrupting the ecosystem balance.",
         "multiple_choice": [
-            "Turing each switch on one at a time and observing the bulbs.",
-            "Turing all of the switches on at once and observing the bulbs.",
-            "Turing two switches on for a while, turn one off, then touching the bulbs too see which is warm and which one is one.",
-            "You must walk into another room to observe the bulbs."
+            "The plant will adapt instantly to new conditions.",
+            "No effect; plants are not sensitive to climate.",
+            "Blooming cycles may be disrupted, affecting the ecosystem.",
+            "The plant will become extinct immediately."
         ]
     },
     {
         "index": 17,
-        "category": "Puzzle",
-        "question": "The Poisoned Wine - A king has 1000 sweet bottles of wine, and one contains a very bitter poison. The poison takes effect exactly 24 hours after consumption. The king needs to find the poisoned bottle in 24 hours for an event. He has 10 prisoners to test the wine. What is the fastest way for him to identify the poisoned bottle?",
-        "human_answer": "Divide the 1000 bottles of wine amongst the 10 prisoners - each receiving 100 bottles. Ask the prisoners to note which bottle tastes very bitter, this is the poisoned one.",
-        "correct_answer": "Divide the bottles of wine amongst the prisoners and get them to note which one tastes bitter.",
+        "category": "Context Integration",
+        "question": "A historical novel is set during a major war but focuses on the daily lives of civilians rather than soldiers. How does understanding the historical context enhance the reader's appreciation of the novel's themes?",
+        "human_answer": "Knowing the historical context helps readers understand the challenges civilians faced, such as scarcity and fear, highlighting the impact of war on everyday life and deepening themes of resilience and humanity.",
+        "correct_answer": "Understanding the historical context illuminates the struggles and experiences of civilians during wartime, emphasizing themes like survival, the human cost of conflict, and societal changes, thus enriching the reader's engagement with the novel.",
         "multiple_choice": [
-            "Divide the bottles of wine amongst the prisoners and get them to note which one tastes bitter.",
-            "Using a binary search strategy with the 10 prisoners, leveraging the concept of binary numbers to minimize the number of tests needed. The king will know results in 24 hours",
-            "Get all of the prisoners to sample each of the bottles of wine and see who dies in 24 hours.",
-            "Divide the bottles of wine amongst the prisoners and get them to take a sip and note which one dies in 24 hours."
+            "It doesn't; the war setting is irrelevant.",
+            "It shows that civilians had easy lives.",
+            "It enhances appreciation of the themes by providing deeper understanding of wartime civilian life.",
+            "It only adds confusion to the story."
         ]
     },
     {
         "index": 18,
-        "category": "Linguistic",
-        "question": "Write a grammatically correct sentence without reusing any letter more than once.",
-        "human_answer": "Dogs bark with me.",
-        "correct_answer": "'Dogs bark with me.'",
+        "category": "Emotional and Social Intelligence",
+        "question": "During a team meeting, one member, Alex, repeatedly interrupts others and dismisses their ideas. What might this behavior indicate, and how can the team leader address it to improve group dynamics?",
+        "human_answer": "Alex might be feeling insecure or trying to assert dominance. The team leader should address this privately, encouraging respectful communication and emphasizing the value of everyone's contributions.",
+        "correct_answer": "Alex's behavior could indicate a lack of respect, insecurity, or a desire for control. The team leader should address the issue by setting clear communication norms, possibly discussing it with Alex privately to promote a more collaborative environment.",
         "multiple_choice": [
-            "'Dogs bark with me.'",
-            "'The quick brown fox jumps over the lazy dog.'",
-            "'The five boxers jog quick.'",
-            "No such sentence is possible."
+            "Alex is the only competent team member.",
+            "Ignore the behavior; it will resolve itself.",
+            "The team leader should enforce respectful communication and address Alex's behavior.",
+            "Remove Alex from the team immediately."
         ]
     },
     {
         "index": 19,
-        "category": "Spatial",
-        "question": "An arrow points up. We rotate it 90 degrees to the left, mirror it along its flat end, and rotate it another 90 degrees to the left. Which direction is it pointing?",
-        "human_answer": "Up",
-        "correct_answer": "Up",
+        "category": "Reasoning and Inference",
+        "question": "If every even number greater than 2 can be expressed as the sum of two prime numbers, is 28 such a number? Demonstrate your reasoning and provide the prime numbers involved.",
+        "human_answer": "Yes, 28 = 11 + 17, both of which are prime numbers.",
+        "correct_answer": "Yes, 28 can be expressed as 11 + 17 or 5 + 23, both pairs involve prime numbers adding up to 28.",
         "multiple_choice": [
-            "Up",
-            "Left",
-            "Down",
-            "Right"
+            "Yes; 28 = 14 + 14.",
+            "No; 28 cannot be expressed as the sum of two primes.",
+            "Yes; it can be expressed as the sum of two primes.",
+            "Cannot determine without testing all possibilities."
         ]
     },
     {
         "index": 20,
-        "category": "Linguistic",
-        "question": "Write a sentence where every word starts with the letter A.",
-        "human_answer": "Alice ate an apple after an argument.",
-        "correct_answer": "Alice ate an apple after an argument.",
+        "category": "Creative and Abstract Thinking",
+        "question": "Imagine that time is a river and events are objects floating downstream. How might this analogy help explain concepts of time perception and memory? Discuss the implications of this metaphor.",
+        "human_answer": "Time as a river suggests that events flow past us; we can't go back upstream. Memories are like objects we recall floating by. It illustrates the continuous and unidirectional nature of time and how we perceive and remember events.",
+        "correct_answer": "The river analogy depicts time as continuously flowing forward, with events passing by like floating objects. This helps explain how we perceive time moving in one direction and how memories are snapshots of past events. It implies that while we can't revisit the past, we can recall and reflect on it, highlighting the transient nature of experiences.",
         "multiple_choice": [
-            "Alice ate an apple after an argument.",
-            "Apples and apricots are always an amazing afternoon snack.",
-            "The aardvark adored and amazing, appetizing apron.",
-            "Alligators always avoid angry ants aggressively attacking two apples."
+            "Time can be stopped like a river dam.",
+            "Events can be revisited by swimming upstream.",
+            "It illustrates the flow of time and how we perceive and remember events.",
+            "Time moves in circles, not like a river."
         ]
     },
     {
         "index": 21,
-        "category": "Relational",
-        "question": "Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?",
-        "human_answer": "One, as each brother has 2 sisters and Sally is one of them.",
-        "correct_answer": "One",
+        "category": "Layered Understanding",
+        "question": "A company's sales have increased, but its profits have decreased over the same period. What factors could explain this discrepancy? Analyze potential reasons and their implications.",
+        "human_answer": "Possible factors include increased costs of production, reduced pricing to drive sales, higher operational expenses, or inefficiencies. This indicates that despite higher sales volume, profitability is affected by costs and expenses.",
+        "correct_answer": "Factors may include rising costs of goods sold, increased operating expenses, lower profit margins due to discounts, or inefficiencies. This suggests that the company's cost management is not keeping pace with sales growth, affecting overall profitability.",
         "multiple_choice": [
-            "One",
-            "Two",
-            "Three",
-            "Hard to know"
+            "The company is making more profit due to higher sales.",
+            "Profits decreased because sales decreased.",
+            "Increased costs or lower margins are reducing profits despite higher sales.",
+            "This scenario is impossible; profits always increase with sales."
         ]
     },
     {
         "index": 22,
-        "category": "Spatial",
-        "question": "I'm in London and facing west, what direction is Edinburgh?",
-        "human_answer": "Right, as Edinburgh is north of London.",
-        "correct_answer": "Right",
+        "category": "Context Integration",
+        "question": "A politician makes a statement supporting environmental conservation while also promoting policies that favor industrial expansion. How can understanding political strategy and public relations explain this apparent contradiction?",
+        "human_answer": "The politician may be trying to appeal to both environmentalists and industry supporters. Understanding political strategy reveals that they might be balancing interests to gain broader support, using public relations to present conflicting positions favorably.",
+        "correct_answer": "Recognizing that politicians often aim to satisfy diverse constituencies, this contradiction may be a strategic attempt to appeal to both environmental and industrial groups. Understanding political rhetoric and public relations helps explain how such contradictions are managed to maintain support from different voter bases.",
         "multiple_choice": [
-            "Left",
-            "Right",
-            "Straight ahead",
-            "Behind you"
+            "The politician is unaware of the contradiction.",
+            "They genuinely believe both are fully compatible without compromise.",
+            "It's a strategic move to appeal to multiple groups, explained by political strategy.",
+            "There is no contradiction; the policies are the same."
         ]
     },
     {
         "index": 23,
-        "category": "Counting",
-        "question": "Count the number of occurrences of the letter 'L' in the word 'LOLLAPALOOZA'.",
-        "human_answer": "Four",
-        "correct_answer": "Four",
+        "category": "Emotional and Social Intelligence",
+        "question": "Sarah is excited about her promotion, but when she tells her friend Maya, Maya responds with a forced smile and quickly changes the subject. What might Maya's reaction indicate, and how should Sarah navigate this situation?",
+        "human_answer": "Maya might feel jealous or disappointed about her own career. Sarah could gently address the reaction or give Maya space, understanding that her friend might be processing her own feelings.",
+        "correct_answer": "Maya's reaction may suggest feelings of envy, insecurity, or preoccupation with her own issues. Sarah might consider acknowledging Maya's feelings, offering support, or choosing an appropriate time to discuss it further, showing empathy and understanding.",
         "multiple_choice": [
-            "Two",
-            "Three",
-            "Four",
-            "Five"
+            "Maya is genuinely happy for Sarah.",
+            "Maya didn't hear what Sarah said.",
+            "Maya may be feeling jealous; Sarah should approach with empathy.",
+            "Sarah should end the friendship immediately."
         ]
     },
     {
         "index": 24,
-        "category": "Puzzle",
-        "question": "How many pairs of twins do you need in a room for there to be at least a 50% chance that two people have the same birthday?",
-        "human_answer": "1 pair, as twins share the same birthday.",
-        "correct_answer": "1 pair",
+        "category": "Reasoning and Inference",
+        "question": "In a code where each letter is replaced by the one that follows it in the alphabet (A becomes B, B becomes C, ..., Z becomes A), what does the coded word 'QSPTF' represent in plain text? Show your decoding process.",
+        "human_answer": "By shifting each letter back one, 'QSPTF' becomes 'PROSE'.",
+        "correct_answer": "Decoding 'QSPTF' by shifting each letter back one position yields 'PROSE'.",
         "multiple_choice": [
-            "1 pair",
-            "12 pairs",
-            "23 pairs",
-            "46 pairs"
+            "QSPTF stands for 'ARTSF'.",
+            "It decodes to 'PROSE'.",
+            "The coded word is 'RTQUF'.",
+            "Cannot decode without the key."
         ]
     },
     {
         "index": 25,
-        "category": "Puzzle",
-        "question": "A partially full hotel has an infinite number of fully furnished rooms. How does it accommodate one more guest?",
-        "human_answer": "By putting the guest in an empty room, as the hotel is only partially full.",
-        "correct_answer": "By putting the guest in an empty room.",
+        "category": "Creative and Abstract Thinking",
+        "question": "If emotions were colors, what color might represent curiosity, and why? Explore the associations and implications of your choice.",
+        "human_answer": "Curiosity might be represented by the color orange, as it's energetic and stimulates mental activity, evoking a sense of enthusiasm and exploration.",
+        "correct_answer": "Curiosity could be associated with yellow, symbolizing brightness, intellect, and inquisitiveness. Yellow stimulates mental processes and the quest for knowledge, making it a fitting representation of curiosity.",
         "multiple_choice": [
-            "By putting the guest in an empty room.",
-            "You ask each current guest to move to the next room.",
-            "You cannot accommodate one more guest.",
-            "You ask each current guest to move to the room number n*2."
+            "Black, because curiosity is dark.",
+            "Red, for passion.",
+            "Yellow, representing inquisitiveness and mental stimulation.",
+            "Blue, symbolizing calmness."
         ]
     },
     {
         "index": 26,
-        "category": "Puzzle",
-        "question": "A runaway trolley is heading down the tracks away from five people upwards of the track. You are near a lever that can switch the trolley to another track? How might pulling the lever impact the five people's lives?",
-        "human_answer": "It doesn't impact anyones lives, as the trolley is heading down the tracks in the opposite direction to the five people up the track.",
-        "correct_answer": "It doesn't impact their lives.",
+        "category": "Layered Understanding",
+        "question": "An increase in urban green spaces has been linked to improved mental health among city residents. Discuss the potential reasons behind this correlation, considering environmental psychology principles.",
+        "human_answer": "Green spaces provide opportunities for relaxation, reduce stress, and promote physical activity, which can improve mental health. They also enhance social cohesion and offer a respite from urban environments.",
+        "correct_answer": "Urban green spaces may reduce stress by offering natural settings that promote relaxation, improve air quality, encourage physical activity, and facilitate social interactions, all contributing to better mental health according to environmental psychology.",
         "multiple_choice": [
-            "Pulling the lever will save their lives.",
-            "Pulling the lever will take their lives.",
-            "It doesn't impact their lives.",
-            "This is an ethical dilemma."
+            "Green spaces have no effect on mental health.",
+            "They increase pollution, worsening health.",
+            "They provide benefits like stress reduction and social opportunities, improving mental health.",
+            "They distract people from work, reducing productivity."
         ]
     },
     {
         "index": 27,
-        "category": "Puzzle",
-        "question": "How do you efficiently measure exactly 4 gallons of water with only a 3-gallon, 5-gallon, 4-gallon, and 2-gallon jug?",
-        "human_answer": "Fill up the 4-gallon jug",
-        "correct_answer": "Another option not stated.",
+        "category": "Context Integration",
+        "question": "In a country where water scarcity is a growing concern, a new policy imposes restrictions on water usage for agriculture. How might this affect the country's food supply and economy? Integrate economic and environmental contexts in your answer.",
+        "human_answer": "Reduced water for agriculture may lead to lower crop yields, increasing food prices, and potentially causing shortages. This can negatively impact the economy, especially if agriculture is a significant sector, and may require imports to meet food demand.",
+        "correct_answer": "Water restrictions could decrease agricultural output, leading to reduced food supply, higher prices, and economic strain on farmers and related industries. The economy might suffer from decreased exports or increased imports, while environmental benefits may include more sustainable water usage.",
         "multiple_choice": [
-            "Filling the 2-gallon jug, twice.",
-            "Filling the 5-gallon jug and pouring it into the 3-gallon jug, twice.",
-            "Filling the 5-gallon jug and pouring it into the 4-gallon jug.",
-            "Another option not stated."
+            "Food supply will increase due to better policies.",
+            "No impact; agriculture doesn't need water.",
+            "Reduced agricultural production may harm the food supply and economy.",
+            "The policy will only benefit the economy."
         ]
     },
     {
         "index": 28,
-        "category": "Popular science",
-        "question": "A 2kg tree grows in a planted pot with 10kg of soil. When the tree grows to 3kg, how much soil is left?",
-        "human_answer": "There is still 10kg of soil. Trees are primarily composed of carbon dioxide and water, not soil.",
-        "correct_answer": "10kg",
+        "category": "Emotional and Social Intelligence",
+        "question": "During a crisis, a leader remains calm and communicates transparently with their team. How does this behavior impact team morale and performance? Analyze using principles of leadership psychology.",
+        "human_answer": "The leader's calmness can reassure the team, reduce panic, and build trust. Transparent communication fosters confidence, leading to better morale and cohesive performance during the crisis.",
+        "correct_answer": "Calm and transparent leadership can alleviate fear, foster trust, and empower team members. This can enhance morale, encourage collective problem-solving, and improve overall performance by creating a stable environment despite the crisis.",
         "multiple_choice": [
-            "8kg",
-            "9kg",
-            "10kg",
-            "11kg"
+            "It has no effect on the team.",
+            "It may confuse the team due to lack of strong emotions.",
+            "It positively influences morale and performance by providing stability and trust.",
+            "It demotivates the team because the leader seems indifferent."
         ]
     },
     {
         "index": 29,
-        "category": "Relational",
-        "question": "A man steps over a 0.5m hurdle. What is the minimum height he could have jumped?",
-        "human_answer": "0m, he didn't jump at all, he stepped over the hurdle.",
-        "correct_answer": "0m",
+        "category": "Reasoning and Inference",
+        "question": "If it takes 3 painters 6 hours to paint a house, how long would it take 2 painters to paint the same house, assuming they work at the same rate? Show your calculations.",
+        "human_answer": "Total painter-hours is 3 painters * 6 hours = 18 painter-hours. For 2 painters: 18 painter-hours / 2 painters = 9 hours.",
+        "correct_answer": "It would take 9 hours for 2 painters to paint the house (18 painter-hours / 2 painters = 9 hours).",
         "multiple_choice": [
-            "0m",
-            "0.5m",
-            "Between 0.1m and 0.5m",
-            "Slightly higher than 0.5m"
+            "4 hours",
+            "9 hours",
+            "12 hours",
+            "18 hours"
         ]
     },
     {
         "index": 30,
-        "category": "Popular science",
-        "question": "I walk to my friend's house, averaging 3mph. How fast would I have to run back to double my average speed for the entire trip?",
-        "human_answer": "Instantaneously fast, it is mathematically impossible.",
-        "correct_answer": "Infinitely fast",
+        "category": "Creative and Abstract Thinking",
+        "question": "Suppose human emotions were stored in jars, and you could choose which to open each day. How might this influence daily life and interpersonal relationships? Discuss the potential benefits and drawbacks of such a scenario.",
+        "human_answer": "Being able to choose emotions could lead to more control over reactions, improving relationships. However, it might reduce authenticity and limit emotional growth by avoiding unpleasant but necessary emotions.",
+        "correct_answer": "This could allow individuals to manage their emotional states intentionally, potentially enhancing productivity and relationships. However, it might lead to superficial interactions, lack of genuine emotional experiences, and could suppress important emotional responses necessary for personal development and empathy.",
         "multiple_choice": [
-            "6mph",
-            "9mph",
-            "12mph",
-            "Infinitely fast"
+            "People would become robots without emotions.",
+            "It would have no impact on daily life.",
+            "It could improve emotional control but might hinder authentic experiences.",
+            "Emotions cannot be controlled in any way."
         ]
-    }
+    },
+    {
+        "index": 31,
+        "category": "Layered Understanding",
+        "question": "An increase in online shopping leads to a decline in brick-and-mortar retail stores. What are the broader economic and social implications of this trend? Analyze the multiple layers of impact.",
+        "human_answer": "Economically, there could be job losses in retail, changes in commercial real estate usage, and growth in logistics and delivery sectors. Socially, it may reduce community interactions in physical stores, affect urban planning, and alter consumer behavior.",
+        "correct_answer": "Broader implications include loss of retail jobs, decline in demand for retail space affecting real estate markets, growth in e-commerce logistics, and changes in consumer habits. Socially, decreased face-to-face interactions can impact community engagement, while urban landscapes may shift with empty storefronts, requiring adaptation in city planning.",
+        "multiple_choice": [
+            "Only online companies benefit; no other effects.",
+            "Brick-and-mortar stores will eventually recover without changes.",
+            "It has wide-reaching economic and social impacts, including job shifts and altered community dynamics.",
+            "Consumers will stop shopping altogether."
+        ]
+    },
+    {
+        "index": 32,
+        "category": "Context Integration",
+        "question": "A global pandemic leads to widespread travel restrictions. How might this affect international business operations, and what strategies can companies employ to mitigate these challenges? Consider economic and technological contexts.",
+        "human_answer": "Travel restrictions can disrupt supply chains and international collaborations. Companies can increase reliance on digital communication tools, diversify supply chains, and adapt to remote work to mitigate impacts.",
+        "correct_answer": "International business operations may face disruptions in supply chains, decreased face-to-face meetings, and logistical challenges. Strategies include adopting virtual communication technologies, strengthening local supply chains, implementing remote work policies, and adjusting business models to be more resilient to such disruptions.",
+        "multiple_choice": [
+            "International business remains unaffected.",
+            "Companies should halt all operations until restrictions lift.",
+            "Operations are impacted; strategies include virtual tools and supply chain adjustments.",
+            "Businesses should ignore restrictions and continue as normal."
+        ]
+    },
+    {
+        "index": 33,
+        "category": "Emotional and Social Intelligence",
+        "question": "A colleague receives negative feedback on a project and seems demotivated. How can you, as a teammate, provide support to help them regain confidence and improve their work?",
+        "human_answer": "Offer encouragement, highlight their strengths, help them understand the feedback constructively, and collaborate on solutions to improve future work.",
+        "correct_answer": "Providing empathetic support, acknowledging their feelings, and helping reframe the feedback as an opportunity for growth can aid in rebuilding their confidence. Offering assistance and positive reinforcement can motivate them to improve.",
+        "multiple_choice": [
+            "Ignore them; they need to handle it alone.",
+            "Criticize them further to toughen them up.",
+            "Offer support and constructive help to regain confidence.",
+            "Take over their work without involving them."
+        ]
+    },
+    {
+        "index": 34,
+        "category": "Reasoning and Inference",
+        "question": "A bag contains 5 red marbles and 3 blue marbles. If you draw one marble at random, what is the probability that it is blue? Show your calculation.",
+        "human_answer": "Total marbles = 8. Probability of blue = 3/8.",
+        "correct_answer": "The probability of drawing a blue marble is 3 out of 8, or 3/8.",
+        "multiple_choice": [
+            "3/5",
+            "1/2",
+            "3/8",
+            "5/8"
+        ]
+    },
+    {
+        "index": 35,
+        "category": "Creative and Abstract Thinking",
+        "question": "If knowledge were a tree, and each branch represented a field of study, how might this visualization help in understanding interdisciplinary connections? Discuss the benefits and limitations of this metaphor.",
+        "human_answer": "The tree shows how different fields stem from common roots and can interconnect, highlighting the importance of interdisciplinary study. However, it might oversimplify complex relationships between disciplines.",
+        "correct_answer": "Visualizing knowledge as a tree emphasizes the interconnectedness of different fields, showing how they branch out from foundational knowledge and overlap at points. This aids in appreciating interdisciplinary connections and encourages holistic learning. Limitations include oversimplification and potential neglect of non-linear relationships between fields.",
+        "multiple_choice": [
+            "It doesn't help; fields are entirely separate.",
+            "It illustrates connections, promoting interdisciplinary understanding.",
+            "Knowledge cannot be represented visually.",
+            "It confuses the understanding of different fields."
+        ]
+    },
+    {
+        "index": 36,
+        "category": "Layered Understanding",
+        "question": "An outbreak of a plant disease affects a staple crop in a region. What short-term and long-term strategies should be implemented to address food security? Analyze the layers of impact and response.",
+        "human_answer": "Short-term: Provide food aid, diversify food sources. Long-term: Invest in disease-resistant crops, improve agricultural practices, and develop contingency plans. Address economic, social, and environmental impacts.",
+        "correct_answer": "Short-term strategies include importing food, distributing aid, and supporting affected farmers. Long-term strategies involve researching disease-resistant crop varieties, diversifying agriculture, enhancing biosecurity measures, and developing sustainable farming practices to ensure future food security. This requires addressing economic, social, and environmental layers of impact.",
+        "multiple_choice": [
+            "Wait for the disease to pass without action.",
+            "Rely solely on international aid indefinitely.",
+            "Implement immediate aid and long-term agricultural improvements.",
+            "Abandon agriculture in the region entirely."
+        ]
+    },
+    {
+        "index": 37,
+        "category": "Context Integration",
+        "question": "A technological advancement increases automation in manufacturing. How might this affect employment patterns, and what measures can societies take to adapt? Include economic and educational contexts in your answer.",
+        "human_answer": "Automation may reduce demand for manual labor, leading to job losses in certain sectors. Societies can invest in retraining programs, education for new skills, and create policies to support workforce transition to technology-driven roles.",
+        "correct_answer": "Employment patterns may shift as automation reduces the need for certain jobs while creating demand for skilled positions in technology and maintenance. Societies can adapt by promoting education in STEM fields, offering retraining programs, and encouraging industries that leverage human creativity and problem-solving, thereby mitigating negative employment impacts.",
+        "multiple_choice": [
+            "Employment remains unaffected.",
+            "Automation will eliminate all jobs.",
+            "Job patterns shift; education and retraining can help adaptation.",
+            "Societies should ban technological advancements."
+        ]
+    },
+    {
+        "index": 38,
+        "category": "Emotional and Social Intelligence",
+        "question": "During a group project, one member is consistently not contributing, causing frustration among others. How can the group address this issue constructively to improve collaboration?",
+        "human_answer": "The group can have an open discussion to understand any challenges the member faces, set clear expectations, and redistribute tasks if necessary, fostering a supportive environment.",
+        "correct_answer": "Addressing the issue directly but empathetically by discussing concerns with the member, identifying any obstacles, and collaboratively finding solutions can improve engagement. Establishing clear roles, accountability, and offering support can enhance collaboration.",
+        "multiple_choice": [
+            "Exclude the member without discussion.",
+            "Complain about them to higher authorities immediately.",
+            "Communicate openly to resolve the issue and improve teamwork.",
+            "Ignore the problem and hope it resolves itself."
+        ]
+    },
+    [
+        {
+            "index": 39,
+            "category": "Puzzle",
+            "question": "You have six horses and want to race them to see which is fastest. What is the minimum number of races needed to do this?",
+            "human_answer": "Race them on a single race track with at least six lanes - the order in which they cross the finish line determines which is the fastest.",
+            "correct_answer": "One",
+            "multiple_choice": [
+                "One",
+                "Two",
+                "Three",
+                "Unknown"
+            ]
+        },
+        {
+            "index": 40,
+            "category": "Puzzle",
+            "question": "Suppose you're on a game show, and you're given the choice of three doors: Behind one door is a gold bar; behind the others, rotten vegetables. You pick a door, say No. 1, and the host asks you 'Do you want to pick door No. 2 instead?' What choice of door now gives you the biggest advantage?",
+            "human_answer": "It is not an advantage to switch. It makes no difference if I switch or not because no additional material information has been provided since the initial choice.",
+            "correct_answer": "They have equal probability of winning",
+            "multiple_choice": [
+                "Door No.1",
+                "Door No.2",
+                "Door No.3",
+                "They have equal probability of winning"
+            ]
+        },
+        {
+            "index": 41,
+            "category": "Spatial",
+            "question": "You are playing Russian roulette with a six-shooter revolver. Your opponent puts in five bullets, spins the chambers and fires at himself, but no bullet comes out. He gives you the choice of whether or not you should spin the chambers again before firing at yourself. Should you spin?",
+            "human_answer": "Yes, you should spin again. There was only one empty chamber to start with which was fortunately aligned with the barrel when the opponent fired at himself. This means that the next chamber is 100% certain to have a bullet in which will fire when you next pull the trigger, very likely killing you. However, if you spin the chamber then you have a 5/6 chance of firing a bullet and a 1/6 chance of getting the empty chamber.",
+            "correct_answer": "Yes, you should spin again",
+            "multiple_choice": [
+                "Yes, you should spin again",
+                "No, you should not spin again",
+                "It makes no difference if you spin again or not",
+                "The probabilities are random and unknown"
+            ]
+        },
+        {
+            "index": 42,
+            "category": "Puzzle",
+            "question": "A farmer wants to cross a river and take with him a wolf, a goat and a cabbage. He has a boat with three secure separate compartments. If the wolf and the goat are alone on one shore, the wolf will eat the goat. If the goat and the cabbage are alone on the shore, the goat will eat the cabbage. What is the minimum number of crossings the farmer needs to make to bring the wolf, the goat and the cabbage across the river without anything being eaten?",
+            "human_answer": "Place the wolf, goat, and cabbage in separate secure compartments in the boat and row across the river in one crossing without being harmed.",
+            "correct_answer": "One crossing",
+            "multiple_choice": [
+                "One crossing",
+                "Five crossings",
+                "Seven crossings",
+                "The animals are not able to be transported across the river without being eaten."
+            ]
+        },
+        {
+            "index": 43,
+            "category": "Puzzle",
+            "question": "Bob has three boxes in front of him - Box A, Box B and Box C. Bob does not know what is in the boxes. Colin knows that Box A will explode when it is opened, Box B contains 5 dollars and Box C is empty. Should Bob open a box? What box should Bob open?",
+            "human_answer": "Bob should not open a box because he has a 1/3 chance of killing himself. The 1/3 chance of “winning” $5 is generally not worth that sort of risk!",
+            "correct_answer": "No, Bob should not open any box",
+            "multiple_choice": [
+                "Yes, Box A",
+                "Yes, Box B",
+                "Yes, Box C",
+                "No, Bob should not open any box"
+            ]
+        },
+        {
+            "index": 44,
+            "category": "Counting",
+            "question": "A robot has 8 arms. There are 5 objects on a table: a knife, a fork, a spoon, a teddy bear and a doll. The robot picks up each object with an arm. He then shakes hands with himself. How many arms does he have free?",
+            "human_answer": "A hand is used for each of the five objects and then two hands are used to shake hands with himself. This means that seven hands are being used, leaving one arm/hand free.",
+            "correct_answer": "1",
+            "multiple_choice": [
+                "0",
+                "1",
+                "2",
+                "Other"
+            ]
+        },
+        {
+            "index": 45,
+            "category": "Spatial",
+            "question": "Alan, Bob, Colin, Dave and Emily are standing in a circle. Alan is on Bob's immediate left. Bob is on Colin's immediate left. Colin is on Dave's immediate left. Dave is on Emily's immediate left. Who is on Alan's immediate right?",
+            "human_answer": "Bob is on Alan's immediate right because it is stated that Alan is on Bob's immediate left.",
+            "correct_answer": "'Bob'",
+            "multiple_choice": [
+                "'Emily'",
+                "'Dave'",
+                "'Bob'",
+                "No one"
+            ]
+        },
+        {
+            "index": 46,
+            "category": "Linguistic",
+            "question": "Write me a sentence without any words that appear in The Bible",
+            "human_answer": "Cryptographic algorithms safeguard nuclear warheads.",
+            "correct_answer": "Cryptographic algorithms safeguard nuclear warheads.",
+            "multiple_choice": [
+                "Cryptographic algorithms safeguard nuclear warheads.",
+                "Our computer, engineered in a contemporary lab, processes data flawlessly and efficiently.",
+                "Quixotic zephyrs vexed the jabberwocky's kumquat garden.",
+                "The computer swiftly executed complex algorithms."
+            ]
+        },
+        {
+            "index": 47,
+            "category": "Popular science",
+            "question": "Which weighs more, a pound of water, two pounds of bricks, a pound of feathers, or three pounds of air.",
+            "human_answer": "Three pounds of air.",
+            "correct_answer": "Three pounds of air.",
+            "multiple_choice": [
+                "Three pounds of air.",
+                "They all weigh the same.",
+                "Two pounds of brick.",
+                "A pound of feathers."
+            ]
+        },
+        {
+            "index": 48,
+            "category": "Relational",
+            "question": "I get out on the top floor (third floor) at street level. How many stories is the building above the ground?",
+            "human_answer": "One story above the ground, as exiting at street level requires a single story building.",
+            "correct_answer": "One story above the ground",
+            "multiple_choice": [
+                "Zero stories above the ground",
+                "One story above the ground",
+                "Two stories above the ground",
+                "Three stories above the ground"
+            ]
+        },
+        {
+            "index": 49,
+            "category": "Spatial",
+            "question": "In a toy box, there's a red ball, a blue truck, and a green dinosaur. The red ball is not next to the blue truck, and the green dinosaur is next to the red ball. Which toy is in the middle?",
+            "human_answer": "The green dinosaur.",
+            "correct_answer": "'The green dinosaur'",
+            "multiple_choice": [
+                "'The green dinosaur'",
+                "'The red ball'",
+                "'The blue truck'",
+                "None of them are positioned in the middle."
+            ]
+        },
+        {
+            "index": 50,
+            "category": "Spatial",
+            "question": "Four children - Alex, Bella, Charlie, and Dana - are sitting around a picnic table. Alex is facing Bella. Charlie is sitting to the right of Bella. Who is sitting to the left of Alex?",
+            "human_answer": "Dana",
+            "correct_answer": "'Dana'",
+            "multiple_choice": [
+                "'Bella'",
+                "'Charlie'",
+                "'Dana'",
+                "No one"
+            ]
+        },
+        {
+            "index": 51,
+            "category": "Spatial",
+            "question": "A man leaves home at 0m elevation, makes a left turn and walks straight for a km and reaches 300m elevation, makes another left turn and walks straight for a km and reaches 500m elevation, makes another left turn and walks straight for a km and reaches 900m elevation, and turns left again and walks straight for a km. How far away is he from his starting point and what is his final elevation?",
+            "human_answer": "He is back at his starting point and at 0m elevation.",
+            "correct_answer": "0m from starting point, 0m elevation.",
+            "multiple_choice": [
+                "0m from starting point, 0m elevation.",
+                "0m from starting point, 1700m elevation.",            
+                "2000m from starting point, 900m elevation.",
+                "We cannot accurately determine his final position and elevation."
+            ]
+        },
+        {
+            "index": 52,
+            "category": "Puzzle",
+            "question": "A group of four people needs to cross a bridge at night. The bridge is very old and rickety. They have only one torch and because it's night-time, the torch is necessary to cross the bridge. Each person walks at a different speed: - A takes 1 minute to cross, - B takes 2 minutes, - C takes 5 minutes, and - D takes 10 minutes. What is the fastest time they can all get across the bridge?",
+            "human_answer": "10 minutes, the speed of the slowest person as they cross the bridge together.",
+            "correct_answer": "10 minutes",
+            "multiple_choice": [
+                "10 minutes",
+                "14 minutes",
+                "17 minutes",
+                "There is not enough information to determine the fastest time."
+            ]
+        },
+        {
+            "index": 53,
+            "category": "Puzzle",
+            "question": "You're in a room with two doors that lead out. One door leads to certain death, and the other door leads to freedom. There are two guardians, one by each door. One taller guardian always tells the truth and guards the death door, the other always lies. What is the minimum number of questions needed to ask the guards to get to safety?",
+            "human_answer": "Zero questions. The door to freedom is behind the shorter guardian.",
+            "correct_answer": "Zero questions",
+            "multiple_choice": [
+                "Zero questions",
+                "One question",
+                "Two questions",
+                "The door leading to freedom can never be determined."
+            ]
+        },
+        {
+            "index": 54,
+            "category": "Puzzle",
+            "question": "You have 3 switches in front of you - A, B and C. You have 3 light bulbs in front of you in the same room - one red, one blue, one purple. They are LED and do not get warm when turned on. You want to know which switch turns on which light bulb. What is the best way to determine this?",
+            "human_answer": "A process of elimination. Test each switch independently and observe which light bulb turns on for each.",
+            "correct_answer": "Turing each switch on one at a time and observing the bulbs.",
+            "multiple_choice": [
+                "Turing each switch on one at a time and observing the bulbs.",
+                "Turing all of the switches on at once and observing the bulbs.",
+                "Turing two switches on for a while, turn one off, then touching the bulbs too see which is warm and which one is one.",
+                "You must walk into another room to observe the bulbs."
+            ]
+        },
+        {
+            "index": 55,
+            "category": "Puzzle",
+            "question": "The Poisoned Wine - A king has 1000 sweet bottles of wine, and one contains a very bitter poison. The poison takes effect exactly 24 hours after consumption. The king needs to find the poisoned bottle in 24 hours for an event. He has 10 prisoners to test the wine. What is the fastest way for him to identify the poisoned bottle?",
+            "human_answer": "Divide the 1000 bottles of wine amongst the 10 prisoners - each receiving 100 bottles. Ask the prisoners to note which bottle tastes very bitter, this is the poisoned one.",
+            "correct_answer": "Divide the bottles of wine amongst the prisoners and get them to note which one tastes bitter.",
+            "multiple_choice": [
+                "Divide the bottles of wine amongst the prisoners and get them to note which one tastes bitter.",
+                "Using a binary search strategy with the 10 prisoners, leveraging the concept of binary numbers to minimize the number of tests needed. The king will know results in 24 hours",
+                "Get all of the prisoners to sample each of the bottles of wine and see who dies in 24 hours.",
+                "Divide the bottles of wine amongst the prisoners and get them to take a sip and note which one dies in 24 hours."
+            ]
+        },
+        {
+            "index": 56,
+            "category": "Linguistic",
+            "question": "Write a grammatically correct sentence without reusing any letter more than once.",
+            "human_answer": "Dogs bark with me.",
+            "correct_answer": "'Dogs bark with me.'",
+            "multiple_choice": [
+                "'Dogs bark with me.'",
+                "'The quick brown fox jumps over the lazy dog.'",
+                "'The five boxers jog quick.'",
+                "No such sentence is possible."
+            ]
+        },
+        {
+            "index": 57,
+            "category": "Spatial",
+            "question": "An arrow points up. We rotate it 90 degrees to the left, mirror it along its flat end, and rotate it another 90 degrees to the left. Which direction is it pointing?",
+            "human_answer": "Up",
+            "correct_answer": "Up",
+            "multiple_choice": [
+                "Up",
+                "Left",
+                "Down",
+                "Right"
+            ]
+        },
+        {
+            "index": 58,
+            "category": "Linguistic",
+            "question": "Write a sentence where every word starts with the letter A.",
+            "human_answer": "Alice ate an apple after an argument.",
+            "correct_answer": "Alice ate an apple after an argument.",
+            "multiple_choice": [
+                "Alice ate an apple after an argument.",
+                "Apples and apricots are always an amazing afternoon snack.",
+                "The aardvark adored and amazing, appetizing apron.",
+                "Alligators always avoid angry ants aggressively attacking two apples."
+            ]
+        },
+        {
+            "index": 59,
+            "category": "Relational",
+            "question": "Sally (a girl) has 3 brothers. Each brother has 2 sisters. How many sisters does Sally have?",
+            "human_answer": "One, as each brother has 2 sisters and Sally is one of them.",
+            "correct_answer": "One",
+            "multiple_choice": [
+                "One",
+                "Two",
+                "Three",
+                "Hard to know"
+            ]
+        },
+        {
+            "index": 60,
+            "category": "Spatial",
+            "question": "I'm in London and facing west, what direction is Edinburgh?",
+            "human_answer": "Right, as Edinburgh is north of London.",
+            "correct_answer": "Right",
+            "multiple_choice": [
+                "Left",
+                "Right",
+                "Straight ahead",
+                "Behind you"
+            ]
+        },
+        {
+            "index": 61,
+            "category": "Counting",
+            "question": "Count the number of occurrences of the letter 'L' in the word 'LOLLAPALOOZA'.",
+            "human_answer": "Four",
+            "correct_answer": "Four",
+            "multiple_choice": [
+                "Two",
+                "Three",
+                "Four",
+                "Five"
+            ]
+        },
+        {
+            "index": 62,
+            "category": "Puzzle",
+            "question": "How many pairs of twins do you need in a room for there to be at least a 50% chance that two people have the same birthday?",
+            "human_answer": "1 pair, as twins share the same birthday.",
+            "correct_answer": "1 pair",
+            "multiple_choice": [
+                "1 pair",
+                "12 pairs",
+                "23 pairs",
+                "46 pairs"
+            ]
+        },
+        {
+            "index": 63,
+            "category": "Puzzle",
+            "question": "A partially full hotel has an infinite number of fully furnished rooms. How does it accommodate one more guest?",
+            "human_answer": "By putting the guest in an empty room, as the hotel is only partially full.",
+            "correct_answer": "By putting the guest in an empty room.",
+            "multiple_choice": [
+                "By putting the guest in an empty room.",
+                "You ask each current guest to move to the next room.",
+                "You cannot accommodate one more guest.",
+                "You ask each current guest to move to the room number n*2."
+            ]
+        },
+        {
+            "index": 64,
+            "category": "Puzzle",
+            "question": "A runaway trolley is heading down the tracks away from five people upwards of the track. You are near a lever that can switch the trolley to another track? How might pulling the lever impact the five people's lives?",
+            "human_answer": "It doesn't impact anyones lives, as the trolley is heading down the tracks in the opposite direction to the five people up the track.",
+            "correct_answer": "It doesn't impact their lives.",
+            "multiple_choice": [
+                "Pulling the lever will save their lives.",
+                "Pulling the lever will take their lives.",
+                "It doesn't impact their lives.",
+                "This is an ethical dilemma."
+            ]
+        },
+        {
+            "index": 65,
+            "category": "Puzzle",
+            "question": "How do you efficiently measure exactly 4 gallons of water with only a 3-gallon, 5-gallon, 4-gallon, and 2-gallon jug?",
+            "human_answer": "Fill up the 4-gallon jug",
+            "correct_answer": "Another option not stated.",
+            "multiple_choice": [
+                "Filling the 2-gallon jug, twice.",
+                "Filling the 5-gallon jug and pouring it into the 3-gallon jug, twice.",
+                "Filling the 5-gallon jug and pouring it into the 4-gallon jug.",
+                "Another option not stated."
+            ]
+        },
+        {
+            "index": 66,
+            "category": "Popular science",
+            "question": "A 2kg tree grows in a planted pot with 10kg of soil. When the tree grows to 3kg, how much soil is left?",
+            "human_answer": "There is still 10kg of soil. Trees are primarily composed of carbon dioxide and water, not soil.",
+            "correct_answer": "10kg",
+            "multiple_choice": [
+                "8kg",
+                "9kg",
+                "10kg",
+                "11kg"
+            ]
+        },
+        {
+            "index": 67,
+            "category": "Relational",
+            "question": "A man steps over a 0.5m hurdle. What is the minimum height he could have jumped?",
+            "human_answer": "0m, he didn't jump at all, he stepped over the hurdle.",
+            "correct_answer": "0m",
+            "multiple_choice": [
+                "0m",
+                "0.5m",
+                "Between 0.1m and 0.5m",
+                "Slightly higher than 0.5m"
+            ]
+        },
+        {
+            "index": 68,
+            "category": "Popular science",
+            "question": "I walk to my friend's house, averaging 3mph. How fast would I have to run back to double my average speed for the entire trip?",
+            "human_answer": "Instantaneously fast, it is mathematically impossible.",
+            "correct_answer": "Infinitely fast",
+            "multiple_choice": [
+                "6mph",
+                "9mph",
+                "12mph",
+                "Infinitely fast"
+            ]
+        }
+    ]
 ]
