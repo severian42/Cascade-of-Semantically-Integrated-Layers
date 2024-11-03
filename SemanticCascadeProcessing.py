@@ -125,7 +125,7 @@ class CSILConfig:
         threshold_step: Step size for adaptive thresholds
     """
     min_keywords: int = 2
-    max_keywords: int = 20
+    max_keywords: int = 100
     keyword_weight_threshold: float = 0.1
     similarity_threshold: float = 0.1
     max_results: Optional[int] = None
