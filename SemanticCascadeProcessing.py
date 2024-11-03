@@ -987,7 +987,7 @@ class CascadeSemanticLayerProcessor:
         """
         try:
             # Lower base temperature from config
-            base_temp = min(0.4, float(self.config.llm_config.temperature))
+            base_temp = min(0.6, float(self.config.llm_config.temperature))
             
             # Reduced layer-specific adjustments
             layer_adjustments = {
@@ -1001,7 +1001,7 @@ class CascadeSemanticLayerProcessor:
             layer_adj = layer_adjustments.get(layer_name, 0.0)
             
             # Scale novelty influence
-            novelty_influence = novelty_score * 0.2  # Reduce novelty impact
+            novelty_influence = novelty_score * 0.4 
             
             # Calculate final temperature with dampened scaling
             final_temp = base_temp + (layer_adj * novelty_influence)
@@ -1012,7 +1012,7 @@ class CascadeSemanticLayerProcessor:
         except Exception as e:
             if self.config.debug_mode:
                 print(f"Error calculating temperature: {str(e)}")
-            return 0.3  # Conservative fallback temperature
+            return 0.3
 
     def _call_llm(
         self,
