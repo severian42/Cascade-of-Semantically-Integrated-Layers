@@ -2,9 +2,9 @@
 
 # **{ [ ( * ) ] }**
 
-## 🌟 Overview
+## 🌊 Overview
 
-CaSIL is an advanced natural language processing system implementing a sophisticated four-layer semantic analysis architecture. It processes both user input and knowledge base content through progressive semantic layers, combining:
+CaSIL is an advanced natural language processing system that implements a sophisticated four-layer semantic analysis architecture. It processes both user input and knowledge base content through progressive semantic layers, combining:
 
 - Dynamic concept extraction and relationship mapping
 - Adaptive semantic similarity analysis
@@ -179,9 +179,9 @@ Input → Session Context → Knowledge Graph → External Knowledge → Respons
 ### Data Flow Architecture
 
 ```
-                                    ┌─────────────────┐
-                                    │  Knowledge Base │
-                                    └────────┬────────┘
+                                    ┌────────────────┐
+                                    │ Knowledge Base │
+                                    └───────┬────────┘
                                             │
                                             ▼
 User Input → Concept Extraction → Similarity Analysis → Graph Integration
@@ -275,7 +275,7 @@ Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTIN
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Thanks to the open-source NLP community
-- Special thanks to all
+- Special thanks to LocalLLaMA for never letting anything slip by them unnoticed; and for just being an awesome community overall
