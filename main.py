@@ -125,34 +125,87 @@ def initialize_system():
 
 def print_graph_stats(processor: CascadeSemanticLayerProcessor) -> None:
     """Print current knowledge graph statistics."""
-    stats = processor.analyze_knowledge_graph()
-    
-    print_colored("\nKnowledge Graph Statistics:", 'blue')
-    print_colored(f"Total Concepts: {stats['num_concepts']}", 'green')
-    print_colored(f"Total Relationships: {stats['num_relationships']}", 'green')
-    print_colored(f"Average Clustering: {stats['average_clustering']:.3f}", 'green')
-    
-    # Print top concepts by centrality
-    print_colored("\nMost Central Concepts:", 'blue')
-    central_concepts = sorted(
-        stats['central_concepts'].items(), 
-        key=lambda x: x[1], 
-        reverse=True
-    )[:5]
-    
-    table_data = [[i+1, concept, f"{score:.3f}"] 
-                 for i, (concept, score) in enumerate(central_concepts)]
-    print(tabulate(
-        table_data,
-        headers=['Rank', 'Concept', 'Centrality Score'],
-        tablefmt='simple'
-    ))
-    
-    # Print communities
-    print_colored(f"\nNumber of Communities: {len(stats['communities'])}", 'blue')
-    for i, community in enumerate(stats['communities'][:3], 1):
-        concepts = list(community)[:5]  # Show first 5 concepts per community
-        print_colored(f"Community {i}: {', '.join(concepts)}", 'green')
+    try:
+        # Initialize default values
+        stats = {
+            'num_concepts': 0,
+            'num_relationships': 0,
+            'average_clustering': 0.0,
+            'central_concepts': {},
+            'communities': []
+        }
+        
+        # Get graph references
+        concept_graph = processor.concept_graph
+        knowledge_graph = processor.knowledge_graph
+        
+        if len(concept_graph.nodes()) == 0 and len(knowledge_graph.nodes()) == 0:
+            print_colored("\nNo concepts in knowledge graph yet. Try processing some queries first!", 'blue')
+            return
+            
+        # Calculate basic statistics
+        stats['num_concepts'] = len(knowledge_graph.nodes())
+        stats['num_relationships'] = len(knowledge_graph.edges())
+        
+        # Calculate clustering coefficient (handle empty graph case)
+        if stats['num_concepts'] > 1:
+            stats['average_clustering'] = nx.average_clustering(
+                knowledge_graph, 
+                weight='weight'
+            )
+            
+        # Calculate centrality measures
+        if stats['num_concepts'] > 0:
+            stats['central_concepts'] = nx.pagerank(
+                knowledge_graph, 
+                weight='weight'
+            )
+            
+        # Find communities using connected components
+        communities = list(nx.connected_components(knowledge_graph.to_undirected()))
+        stats['communities'] = sorted(communities, key=len, reverse=True)
+        
+        # Print statistics
+        print_colored("\nKnowledge Graph Statistics:", 'blue')
+        print_colored(f"Total Concepts: {stats['num_concepts']}", 'green')
+        print_colored(f"Total Relationships: {stats['num_relationships']}", 'green')
+        print_colored(
+            f"Average Clustering: {stats['average_clustering']:.3f}", 
+            'green'
+        )
+        
+        # Print top concepts by centrality
+        if stats['central_concepts']:
+            print_colored("\nMost Central Concepts:", 'blue')
+            central_concepts = sorted(
+                stats['central_concepts'].items(), 
+                key=lambda x: x[1], 
+                reverse=True
+            )[:5]
+            
+            table_data = [[i+1, concept, f"{score:.3f}"] 
+                         for i, (concept, score) in enumerate(central_concepts)]
+            print(tabulate(
+                table_data,
+                headers=['Rank', 'Concept', 'Centrality Score'],
+                tablefmt='simple'
+            ))
+        
+        # Print communities
+        if stats['communities']:
+            print_colored(
+                f"\nNumber of Communities: {len(stats['communities'])}", 
+                'blue'
+            )
+            for i, community in enumerate(stats['communities'][:3], 1):
+                concepts = list(community)[:5]  # Show first 5 concepts
+                print_colored(
+                    f"Community {i}: {', '.join(concepts)}", 
+                    'green'
+                )
+                
+    except Exception as e:
+        print_colored(f"Error analyzing graph: {str(e)}", 'red')
 
 def main():
     print_colored("Initializing system...", 'blue')
@@ -163,17 +216,36 @@ def main():
     
     try:
         # Initialize SemanticCascadeProcessor with configuration
+        llm_config = LLMConfig(
+            url=os.getenv('LLM_URL', 'http://0.0.0.0:11434/v1/chat/completions'),
+            model=os.getenv('LLM_MODEL', 'hf.co/arcee-ai/SuperNova-Medius-GGUF:f16'),
+            context_window=int(os.getenv('LLM_CONTEXT_WINDOW', '8192')),
+            max_tokens=int(os.getenv('LLM_MAX_TOKENS', '4096')),
+            top_p=float(os.getenv('LLM_TOP_P', '0.9')),
+            frequency_penalty=float(os.getenv('LLM_FREQUENCY_PENALTY', '0.0')),
+            presence_penalty=float(os.getenv('LLM_PRESENCE_PENALTY', '0.0')),
+            repeat_penalty=float(os.getenv('LLM_REPEAT_PENALTY', '1.1')),
+            temperature=float(os.getenv('LLM_TEMPERATURE', '0.7')),
+            stream=True,
+            stop_sequences=[],
+            seed=None
+        )
+        
         config = CSILConfig(
             min_keywords=1,
             max_keywords=100,
             similarity_threshold=0.05,
             max_results=10,
-            llm_config=LLMConfig(),
+            llm_config=llm_config,
             debug_mode='--debug' in sys.argv,
-            
         )
         
         processor = CascadeSemanticLayerProcessor(config)
+        
+        # Initialize knowledge graphs
+        processor.concept_graph = nx.Graph()
+        processor.knowledge_graph = nx.DiGraph()
+        
         processor.knowledge_base = initialize_knowledge_base(
             use_external_knowledge=config.use_external_knowledge
         )
@@ -216,15 +288,32 @@ def main():
                     
                 if user_input.lower() == 'concepts':
                     concepts = list(processor.knowledge_graph.nodes())
+                    if not concepts:
+                        print_colored(
+                            "\nNo concepts in knowledge graph yet. Try processing some queries first!", 
+                            'blue'
+                        )
+                        continue
+                        
                     print_colored("\nCurrent Concepts:", 'blue')
                     for i, concept in enumerate(concepts, 1):
-                        freq = processor.knowledge_graph.nodes[concept].get('frequency', 0)
+                        freq = processor.knowledge_graph.nodes[concept].get(
+                            'frequency', 
+                            0
+                        )
                         print_colored(f"{i}. {concept} (freq: {freq})", 'green')
                     print()
                     continue
                     
                 if user_input.lower() == 'relations':
-                    edges = processor.knowledge_graph.edges(data=True)
+                    edges = list(processor.knowledge_graph.edges(data=True))
+                    if not edges:
+                        print_colored(
+                            "\nNo relationships in knowledge graph yet. Try processing some queries first!", 
+                            'blue'
+                        )
+                        continue
+                        
                     sorted_edges = sorted(
                         edges, 
                         key=lambda x: x[2].get('weight', 0), 
@@ -293,6 +382,9 @@ def main():
                 break
             except Exception as e:
                 print_colored(f"\nError processing query: {str(e)}", 'red')
+                if '--debug' in sys.argv:
+                    import traceback
+                    print_colored(traceback.format_exc(), 'red')
                 print_colored("Please try again.\n", 'red')
     
     except Exception as e:
