@@ -1,0 +1,15 @@
+Example 1: Navigation Problem
+A robot must navigate through a complex 3D environment:
+- Initial position analysis
+- Obstacle detection
+- Path optimization
+- Real-time adjustment
+- Goal state verification
+
+Example 2: Architectural Design
+Creating a sustainable building design:
+- Spatial efficiency analysis
+- Environmental impact modeling
+- User flow optimization
+- Resource distribution
+- Emergency exit planning 
