@@ -1473,13 +1473,13 @@ class CascadeSemanticLayerProcessor:
             svd = TruncatedSVD(n_components=min(vectors.shape[1], 50))
             reduced_vectors = svd.fit_transform(vectors)
             
-            # Adaptive DBSCAN
+            # Adaptive DBSCAN with minimum epsilon
             nn = NearestNeighbors(n_neighbors=min_cluster_size)
             nn.fit(reduced_vectors)
             distances, _ = nn.kneighbors(reduced_vectors)
             
-            # Calculate optimal epsilon
-            optimal_eps = np.percentile(distances[:, -1], 75)
+            # Calculate optimal epsilon with minimum value
+            optimal_eps = max(0.1, np.percentile(distances[:, -1], 75))
             
             # Perform clustering
             clustering = DBSCAN(
