@@ -1,3 +1,5 @@
+# **DISCLAIMER! THIS WAS AI GENERATED AND NOT MEANT AS A REAL RESEARCH PAPER. ITS PART OF A WORKFLOW ROR TAKING IDEAS AND TURNING THEM INTO STARTING CODEBASES. DONT THINK OF THIS AS ANYTHING TRUE OR DEFINITIVE**
+
 # Semantic Cascade Processing: A Multi-Layer Framework for Enhanced Natural Language Understanding and Response Generation
 
 ## Abstract
