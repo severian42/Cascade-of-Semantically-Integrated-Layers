@@ -1,0 +1,21 @@
+Spatial reasoning encompasses the ability to understand and manipulate spatial relationships:
+
+Core Components:
+1. Mental Rotation: Ability to rotate objects mentally in 3D space
+2. Spatial Visualization: Creating and manipulating mental images
+3. Spatial Relations: Understanding positional relationships between objects
+4. Pattern Recognition: Identifying geometric and spatial patterns
+
+Key Applications:
+- Geometric Problem Solving
+- Navigation and Pathfinding
+- Visual-Spatial Memory
+- Dimensional Analysis
+- Spatial Perspective Taking
+
+Fundamental Principles:
+- Reference Frame Theory
+- Mental Model Construction
+- Spatial Transformation
+- Visual Working Memory
+- Geometric Invariance 

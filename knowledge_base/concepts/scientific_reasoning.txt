@@ -1,0 +1,22 @@
+Scientific reasoning involves systematic analysis and problem-solving:
+
+Core Methods:
+1. Hypothesis Formation
+2. Experimental Design
+3. Data Analysis
+4. Theory Construction
+5. Model Validation
+
+Key Principles:
+- Causality Analysis
+- Variable Control
+- Statistical Inference
+- Reproducibility
+- Falsifiability
+
+Cognitive Components:
+- Logical Deduction
+- Empirical Observation
+- Systematic Analysis
+- Evidence Evaluation
+- Theory Integration 
