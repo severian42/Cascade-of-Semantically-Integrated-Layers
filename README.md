@@ -1,7 +1,8 @@
 # Cascade of Semantically Integrated Layers (CaSIL)
 
 <div align="center">
-  <h1><b>![CaSIL](./logo.png)</b></h1>
+  <h1><b><img src="./logo.png" alt="Logo" width="400"/></b></h1>
+
 
   [CaSIL_Marble_In_Cup_Question](https://github.com/user-attachments/assets/b400b464-bec8-4732-acb3-6bae2d411fb6)
 </div>
