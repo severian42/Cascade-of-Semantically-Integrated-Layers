@@ -1,7 +1,7 @@
 # Cascade of Semantically Integrated Layers (CaSIL)
 
 <div align="center">
-  <h1><b>{ [ ( * ) ] }</b></h1>
+  <h1><b>(https://github.com/user-attachments/assets/fff7b280-2140-4d56-abd2-e5eb226f1cf3)</b></h1>
 
   [CaSIL_Marble_In_Cup_Question](https://github.com/user-attachments/assets/b400b464-bec8-4732-acb3-6bae2d411fb6)
 </div>
