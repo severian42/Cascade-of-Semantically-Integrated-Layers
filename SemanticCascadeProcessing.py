@@ -38,6 +38,8 @@ import networkx as nx
 from sklearn.decomposition import TruncatedSVD
 from sklearn.neighbors import NearestNeighbors
 from tabulate import tabulate
+from collections import OrderedDict
+from typing import TypeVar, Generic
 
 # Load environment variables
 load_dotenv()
@@ -271,8 +273,12 @@ class KnowledgeGraphContext:
     concept_metadata: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     entity_relationships: Dict[str, Set[str]] = field(default_factory=dict)
     
-    def add_concept(self, concept: str, metadata: Dict[str, Any]) -> None:
-        """Add or update concept in knowledge graph with proper metadata handling"""
+    # Add vector storage
+    vector_store: Dict[str, np.ndarray] = field(default_factory=dict)
+    
+    def add_concept(self, concept: str, metadata: Dict[str, Any], 
+                   vector: Optional[np.ndarray] = None) -> None:
+        """Add or update concept with vector embedding"""
         try:
             # Get existing node data if it exists
             existing_data = (
@@ -296,95 +302,83 @@ class KnowledgeGraphContext:
             self.knowledge_graph.add_node(concept, **node_data)
             self.concept_metadata[concept] = metadata
             
+            # Store vector embedding if provided
+            if vector is not None:
+                self.vector_store[concept] = vector
+                
         except Exception as e:
             raise RuntimeError(f"Failed to add concept {concept}: {str(e)}")
+            
+    def get_similar_concepts(self, query_vector: np.ndarray, 
+                           top_k: int = 5) -> List[Tuple[str, float]]:
+        """Retrieve similar concepts using vector similarity"""
+        similarities = []
+        for concept, vector in self.vector_store.items():
+            similarity = cosine_similarity(
+                query_vector.reshape(1, -1),
+                vector.reshape(1, -1)
+            )[0][0]
+            similarities.append((concept, similarity))
+            
+        # Sort by similarity score
+        return sorted(similarities, key=lambda x: x[1], 
+                     reverse=True)[:top_k]
 
-    def print_graph_summary(self, max_items: int = 5) -> None:
-        """Print a structured summary of the knowledge graph."""
+T = TypeVar('T')  # Type variable for cache values
+
+class LRUCache(Generic[T]):
+    """
+    Least Recently Used (LRU) cache implementation.
+    
+    Args:
+        maxsize: Maximum number of items to store
+        on_evict: Optional callback when items are evicted
+    """
+    def __init__(self, maxsize: int = 1000, on_evict=None):
+        self.maxsize = maxsize
+        self.cache = OrderedDict()
+        self.on_evict = on_evict
+
+    def get(self, key: str, default: T = None) -> T:
+        """Get item from cache with optional default."""
         try:
-            if not self.knowledge_graph.nodes():
-                print_colored("Knowledge graph is empty.", 'blue')
-                return
-                
-            # 1. Basic Statistics
-            print_colored("\n📊 Knowledge Graph Statistics:", 'blue')
-            print_colored(f"Total Concepts: {len(self.knowledge_graph.nodes())}", 'green')
-            print_colored(f"Total Relationships: {len(self.knowledge_graph.edges())}", 'green')
-            
-            # 2. Most Frequent Concepts
-            print_colored("\n🔝 Most Frequent Concepts:", 'blue')
-            frequent_concepts = sorted(
-                self.knowledge_graph.nodes(data=True),
-                key=lambda x: x[1].get('frequency', 0),
-                reverse=True
-            )[:max_items]
-            
-            table_data = [
-                [i+1, concept, data.get('frequency', 0), 
-                 data.get('last_seen', 'N/A')[:19]]  # Truncate timestamp
-                for i, (concept, data) in enumerate(frequent_concepts)
-            ]
-            print(tabulate(
-                table_data,
-                headers=['Rank', 'Concept', 'Frequency', 'Last Seen'],
-                tablefmt='simple'
-            ))
-            
-            # 3. Strongest Relationships
-            print_colored("\n🔗 Strongest Relationships:", 'blue')
-            strong_edges = sorted(
-                self.knowledge_graph.edges(data=True),
-                key=lambda x: x[2].get('weight', 0),
-                reverse=True
-            )[:max_items]
-            
-            table_data = [
-                [i+1, f"{c1} → {c2}", f"{data.get('weight', 0):.3f}"]
-                for i, (c1, c2, data) in enumerate(strong_edges)
-            ]
-            print(tabulate(
-                table_data,
-                headers=['Rank', 'Relationship', 'Strength'],
-                tablefmt='simple'
-            ))
-            
-            # 4. Recent Additions
-            print_colored("\n🕒 Recently Added Concepts:", 'blue')
-            recent_concepts = sorted(
-                self.knowledge_graph.nodes(data=True),
-                key=lambda x: x[1].get('first_seen', ''),
-                reverse=True
-            )[:max_items]
-            
-            table_data = [
-                [i+1, concept, data.get('first_seen', 'N/A')[:19]]
-                for i, (concept, data) in enumerate(recent_concepts)
-            ]
-            print(tabulate(
-                table_data,
-                headers=['Rank', 'Concept', 'First Seen'],
-                tablefmt='simple'
-            ))
-            
-            # 5. Concept Clusters (if available)
-            try:
-                communities = list(nx.community.greedy_modularity_communities(
-                    self.knowledge_graph.to_undirected()
-                ))
-                if communities:
-                    print_colored(f"\n👥 Concept Communities ({len(communities)} total):", 'blue')
-                    for i, community in enumerate(communities[:3], 1):
-                        concepts = list(community)[:5]
-                        print_colored(
-                            f"Community {i} ({len(community)} concepts): "
-                            f"{', '.join(concepts)}{'...' if len(community) > 5 else ''}",
-                            'green'
-                        )
-            except Exception:
-                pass  # Skip community detection if it fails
-                
-        except Exception as e:
-            print_colored(f"Error displaying graph: {str(e)}", 'red')
+            value = self.cache.pop(key)
+            self.cache[key] = value
+            return value
+        except KeyError:
+            return default
+
+    def put(self, key: str, value: T) -> None:
+        """Add item to cache, evicting oldest if necessary."""
+        try:
+            self.cache.pop(key)
+        except KeyError:
+            if len(self.cache) >= self.maxsize:
+                # Get oldest item
+                oldest_key, oldest_value = self.cache.popitem(last=False)
+                if self.on_evict:
+                    self.on_evict(oldest_key, oldest_value)
+        self.cache[key] = value
+
+    def __getitem__(self, key: str) -> T:
+        """Get item using dictionary syntax."""
+        return self.get(key)
+
+    def __setitem__(self, key: str, value: T) -> None:
+        """Set item using dictionary syntax."""
+        self.put(key, value)
+
+    def __contains__(self, key: str) -> bool:
+        """Check if key exists in cache."""
+        return key in self.cache
+
+    def __len__(self) -> int:
+        """Get number of items in cache."""
+        return len(self.cache)
+
+    def clear(self) -> None:
+        """Clear all items from cache."""
+        self.cache.clear()
 
 class CascadeSemanticLayerProcessor:
     """
@@ -567,6 +561,19 @@ class CascadeSemanticLayerProcessor:
         # Add deduplication tracking
         self._concept_normalizer = {}  # Maps variants to canonical forms
         self._concept_metadata = {}    # Stores metadata for canonical forms
+        
+        # Initialize vector database with LRU cache
+        self.vector_db = {
+            'embeddings': LRUCache(maxsize=1000),
+            'metadata': {},
+            'timestamps': {}
+        }
+        
+        # Add vector cache with size limit
+        self._vector_cache = LRUCache(maxsize=1000)
+        
+        # Add embedding cache with decorator
+        self._get_embedding = lru_cache(maxsize=1000)(self._generate_embedding)
 
     @property
     def thread_pool(self):
@@ -889,7 +896,7 @@ class CascadeSemanticLayerProcessor:
                 "synthesis",
                 user_input,
                 results['context_integration'],
-                "Create a cohesive final response that builds upon all previous layers and directly answers the users query and/or intent. Make sure your response is readable an in conversation format."
+                "Create a cohesive final response that builds upon all previous layers and directly answers the users query and/or intent. Make sure your response is readable and helpful to the user."
             )
             
             return results
@@ -2213,6 +2220,96 @@ class CascadeSemanticLayerProcessor:
         except Exception as e:
             if self.config.debug_mode:
                 print(f"Error cleaning caches: {str(e)}")
+
+    def _generate_embedding(self, text: str) -> np.ndarray:
+        """Generate vector embedding for text."""
+        try:
+            return self.vectorizer.transform([text]).toarray()[0]
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error generating embedding: {str(e)}")
+            return np.zeros(self.vectorizer.max_features)
+
+    def _get_vector_embedding(self, text: str) -> np.ndarray:
+        """Get vector embedding with caching."""
+        try:
+            cache_key = hash(text)
+            
+            # Check cache first
+            if cache_key in self._vector_cache:
+                return self._vector_cache[cache_key]
+            
+            # Generate new embedding
+            vector = self._get_embedding(text)
+            self._vector_cache[cache_key] = vector
+            return vector
+            
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error in vector embedding: {str(e)}")
+            return self._generate_embedding(text)
+
+    def _update_knowledge_base(self, concepts: List[str], 
+                             context: str) -> None:
+        """Update knowledge base with new concepts and vectors."""
+        try:
+            current_time = datetime.now()
+            
+            for concept in concepts:
+                # Generate vector embedding
+                vector = self._get_vector_embedding(concept)
+                
+                # Update vector database
+                self.vector_db['embeddings'][concept] = vector
+                self.vector_db['timestamps'][concept] = current_time
+                
+                # Add metadata
+                metadata = {
+                    'context': context,
+                    'last_seen': current_time,
+                    'frequency': self.vector_db['metadata'].get(
+                        concept, {}
+                    ).get('frequency', 0) + 1
+                }
+                self.vector_db['metadata'][concept] = metadata
+                
+                # Update knowledge graph
+                self.knowledge.add_concept(concept, metadata, vector)
+                
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error updating knowledge base: {str(e)}")
+                
+    def _retrieve_relevant_knowledge(self, query: str, 
+                                   top_k: int = 5) -> List[Dict[str, Any]]:
+        """Retrieve relevant knowledge using vector similarity"""
+        try:
+            # Get query vector
+            query_vector = self._get_vector_embedding(query)
+            
+            # Get similar concepts
+            similar_concepts = self.knowledge.get_similar_concepts(
+                query_vector, 
+                top_k=top_k
+            )
+            
+            # Build response with metadata
+            results = []
+            for concept, similarity in similar_concepts:
+                result = {
+                    'concept': concept,
+                    'similarity': similarity,
+                    'metadata': self.vector_db['metadata'].get(concept, {}),
+                    'vector': self.vector_db['embeddings'].get(concept)
+                }
+                results.append(result)
+                
+            return results
+            
+        except Exception as e:
+            if self.config.debug_mode:
+                print(f"Error retrieving knowledge: {str(e)}")
+            return []
 
 def print_colored(text: str, color: str = 'blue', end: str = '\n') -> None:
     """
