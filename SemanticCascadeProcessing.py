@@ -125,7 +125,7 @@ class CSILConfig:
         threshold_step: Step size for adaptive thresholds
     """
     min_keywords: int = 2
-    max_keywords: int = 100
+    max_keywords: int = 20
     keyword_weight_threshold: float = 0.1
     similarity_threshold: float = 0.1
     max_results: Optional[int] = None
@@ -1001,7 +1001,7 @@ class CascadeSemanticLayerProcessor:
             layer_adj = layer_adjustments.get(layer_name, 0.0)
             
             # Scale novelty influence
-            novelty_influence = novelty_score * 0.4 
+            novelty_influence = novelty_score * 0.5
             
             # Calculate final temperature with dampened scaling
             final_temp = base_temp + (layer_adj * novelty_influence)
@@ -1016,12 +1016,12 @@ class CascadeSemanticLayerProcessor:
 
     def _call_llm(
         self,
-        prompt: str,
+        prompt: str, 
         user_input: str,
         config: Dict[str, Any] = None
     ) -> str:
         """
-        Make API call to LLM with enhanced debug output.
+        Make API call to LLM with enhanced error handling and response parsing.
         
         Args:
             prompt: System prompt
@@ -1029,81 +1029,114 @@ class CascadeSemanticLayerProcessor:
             config: Optional configuration overrides
             
         Returns:
-            str: LLM response
+            str: LLM response text
         """
         try:
+            # Build base configuration
+            base_config = {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": prompt
+                    },
+                    {
+                        "role": "user", 
+                        "content": user_input
+                    }
+                ],
+                "temperature": self.config.llm_config.temperature,
+                "stream": self.config.llm_config.stream,
+                "model": self.config.llm_config.model,
+                "top_p": self.config.llm_config.top_p,
+                "frequency_penalty": self.config.llm_config.frequency_penalty,
+                "presence_penalty": self.config.llm_config.presence_penalty
+            }
+            
+            # Override with any provided config
+            if config:
+                base_config.update(config)
+
             if self.config.debug_mode:
                 print("\n🔍 LLM Call Details:")
-                print(f"  Temperature: {config.get('temperature', 'default')}")
-                print(f"  Model: {config.get('model', 'default')}")
-                print(f"  Stream: {config.get('stream', True)}")
+                print(f"  Temperature: {base_config['temperature']}")
+                print(f"  Model: {base_config['model']}")
+                print(f"  Stream: {base_config['stream']}")
                 print("\n📝 Prompt:")
-                print(f"  {prompt[:200]}...")  # Show first 200 chars
-                
-            # Use provided config or default
-            if config is None:
-                config = {
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": prompt
-                        },
-                        {
-                            "role": "user",
-                            "content": user_input
-                        }
-                    ],
-                    "temperature": self.config.llm_config.temperature,
-                    "stream": self.config.llm_config.stream,
-                    "model": self.config.llm_config.model
-                }
-            
+                print(f"  {prompt[:200]}...")
+
             # Make API request
             if self.config.debug_mode:
                 print("\n🌐 Making API request...")
                 
             response = requests.post(
                 self.config.llm_config.url,
-                json=config,
-                stream=config.get("stream", True)
+                json=base_config,
+                headers={"Content-Type": "application/json"},
+                stream=base_config["stream"]
             )
             response.raise_for_status()
 
-            if config.get("stream", True):
-                if self.config.debug_mode:
-                    print("\n💭 Streaming response:")
-                    
-                client = sseclient.SSEClient(response)
+            # Handle streaming response
+            if base_config["stream"]:
                 full_response = ""
-                for event in client.events():
+                for line in response.iter_lines():
+                    if not line:
+                        continue
+                        
                     try:
-                        chunk = json.loads(event.data)
-                        if 'choices' in chunk and chunk['choices']:
-                            content = chunk['choices'][0].get('delta', {}).get(
-                                'content', ''
-                            )
-                            full_response += content
-                            if self.config.debug_mode:
-                                print(content, end='', flush=True)
+                        # Remove 'data: ' prefix if present
+                        line_text = line.decode('utf-8')
+                        if line_text.startswith('data: '):
+                            line_text = line_text[6:]
+                            
+                        # Skip empty or [DONE] messages
+                        if line_text.strip() in ('', '[DONE]'):
+                            continue
+                            
+                        json_response = json.loads(line_text)
+                        
+                        # Extract content based on response structure
+                        if 'choices' in json_response:
+                            content = None
+                            if 'delta' in json_response['choices'][0]:
+                                content = json_response['choices'][0]['delta'].get('content')
+                            elif 'text' in json_response['choices'][0]:
+                                content = json_response['choices'][0]['text']
+                                
+                            if content:
+                                full_response += content
+                                if self.config.debug_mode:
+                                    print(content, end='', flush=True)
+                                    
                     except json.JSONDecodeError:
                         if self.config.debug_mode:
-                            print("⚠️ JSON decode error in stream")
+                            print(f"\n⚠️ JSON decode error: {line_text}")
+                        continue
+                    except Exception as e:
+                        if self.config.debug_mode:
+                            print(f"\n⚠️ Error processing stream: {str(e)}")
                         continue
                         
                 if self.config.debug_mode:
                     print("\n✅ Stream complete")
-                return full_response
+                return full_response.strip()
+                
+            # Handle non-streaming response
             else:
                 response_json = response.json()
                 if self.config.debug_mode:
                     print("\n📤 Non-streaming response received")
-                return response_json['choices'][0]['message']['content']
+                    
+                if 'choices' in response_json and response_json['choices']:
+                    return response_json['choices'][0]['message']['content'].strip()
+                else:
+                    raise ValueError("Invalid response format from LLM API")
 
         except Exception as e:
             if self.config.debug_mode:
                 print(f"\n❌ LLM API call error: {str(e)}")
                 print(f"  URL: {self.config.llm_config.url}")
-                print(f"  Config: {json.dumps(config, indent=2)}")
+                print(f"  Config: {json.dumps(base_config, indent=2)}")
             return f"Error in LLM processing: {str(e)}"
 
     def _calculate_concept_novelty(
