@@ -1,6 +1,6 @@
-# Cascade of Semantically Integrated Layers (CaSIL)
 
 <div align="center">
+  <h1><b># Cascade of Semantically Integrated Layers (CaSIL)</b></h1>
   <h1><b><img src="./logo.png" alt="Logo" width="400"/></b></h1>
 
 
