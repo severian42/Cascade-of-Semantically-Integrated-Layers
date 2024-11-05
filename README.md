@@ -25,8 +25,7 @@ CaSIL is an advanced natural language processing system that implements a sophis
 ### Prerequisites
 
 - Python 3.10+
-- Local LLM server (e.g., Ollama)
-- Required Python packages (see requirements.txt)
+- OpenAI Compatible LLM Provider 
 
 ### Installation
 
